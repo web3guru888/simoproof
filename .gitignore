@@ -1,0 +1,62 @@
+# Environment & secrets — NEVER commit these
+.env
+.env.local
+.env.*.local
+*.env
+!.env.example
+
+# Credentials
+.git-credentials
+credentials.env
+**/credentials.env
+
+# Node
+node_modules/
+dist/
+build/
+*.tsbuildinfo
+.npm/
+
+# Rust / Cargo
+target/
+**/*.rs.bk
+Cargo.lock
+
+# Foundry
+cache/
+out/
+broadcast/
+!broadcast/*/31337/
+lib/
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Editor
+.vscode/settings.json
+.idea/
+*.iml
+
+# Test artifacts
+coverage/
+lcov.info
+
+# Logs
+*.log
+npm-debug.log*
+
+# Risc0 build artifacts
+riscv-guest/
+methods.rs
+
+# AXL data
+axl-data/
+*.axl
+
+# Temp
+tmp/
+temp/
+.tmp/
