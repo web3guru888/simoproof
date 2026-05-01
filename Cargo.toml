@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "crates/simoproof-guest",
+    "crates/simoproof-prover",
+]
+resolver = "2"
