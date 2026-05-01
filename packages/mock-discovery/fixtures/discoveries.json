@@ -1,0 +1,47 @@
+[
+  {
+    "id": "disc-001",
+    "claim": "Thailand per-capita CO2 emissions exceeded 4.0 tonnes in 2022",
+    "source_url": "https://api.worldbank.org/v2/country/TH/indicator/EN.ATM.CO2E.PC?format=json&mrv=3",
+    "source_description": "World Bank EN.ATM.CO2E.PC indicator, Thailand 2022",
+    "raw_source_bytes": "W1t7InBhZ2UiOjEsInBhZ2VzIjoxLCJwZXJfcGFnZSI6IjUwIiwidG90YWwiOjF9XSxbeyJpbmRpY2F0b3IiOnsiY29kZSI6IkVOLkFUTS5DTzJFLlBDIn0sImNvdW50cnkiOnsiY29kZSI6IlRIIn0sInZhbHVlIjo0LjEyLCJkYXRlIjoiMjAyMiJ9XV0=",
+    "confidence": 0.91,
+    "causal_summary": "industrial_output → co2_emissions (0.88); co2_emissions → temperature_anomaly (0.91)"
+  },
+  {
+    "id": "disc-002",
+    "claim": "Global average surface temperature anomaly reached +1.45°C above pre-industrial baseline in 2023",
+    "source_url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=T2M&community=RE&longitude=0&latitude=0&start=2023&end=2023&format=JSON",
+    "source_description": "NASA POWER API, global surface temperature 2023",
+    "raw_source_bytes": "eyJwYXJhbWV0ZXJzIjp7IlQyTSI6eyIyMDIzMDEiOjE0LjQ1LCIyMDIzMDIiOjE0LjYyLCIyMDIzMDMiOjE0LjU4fX0sImhlYWRlciI6eyJ0aXRsZSI6Ikdsb2JhbCBUZW1wZXJhdHVyZSAyMDIzIn19",
+    "confidence": 0.97,
+    "causal_summary": "ghg_concentration → radiative_forcing (0.97); radiative_forcing → temperature_anomaly (0.96)"
+  },
+  {
+    "id": "disc-003",
+    "claim": "PM2.5 concentrations above 100 µg/m³ correlate with a 23% increase in respiratory hospital admissions in urban Southeast Asia",
+    "source_url": "https://ghoapi.azureedge.net/api/SDGPM25?$filter=SpatialDimType eq 'REGION'",
+    "source_description": "WHO GHO AQH_29 — PM2.5 air quality indicator, SEARO region",
+    "raw_source_bytes": "eyJ2YWx1ZSI6W3siSW5kaWNhdG9yQ29kZSI6IkFRSF8yOSIsIlNwYXRpYWxEaW0iOiJTRUFSTyIsIlZhbHVlIjoxMDMuMiwiVGltZURpbSI6IjIwMjIifV19",
+    "confidence": 0.87,
+    "causal_summary": "pm25_concentration → airway_inflammation (0.87); airway_inflammation → hospital_admissions (0.82)"
+  },
+  {
+    "id": "disc-004",
+    "claim": "Arctic sea ice extent in September 2023 was the lowest recorded in the satellite era at 4.23 million km²",
+    "source_url": "https://api.worldbank.org/v2/country/1W/indicator/AG.LND.ICEL.K2?format=json&mrv=1",
+    "source_description": "NSIDC via World Bank climate indicators, Arctic extent 2023",
+    "raw_source_bytes": "W1t7InBhZ2UiOjF9XSxbeyJpbmRpY2F0b3IiOnsiY29kZSI6IkFHLkxORC5JQ0VMLksyIn0sInZhbHVlIjo0LjIzLCJkYXRlIjoiMjAyMyJ9XV0=",
+    "confidence": 0.99,
+    "causal_summary": "arctic_warming → sea_ice_melt (0.99); sea_ice_melt → albedo_feedback (0.94)"
+  },
+  {
+    "id": "disc-005",
+    "claim": "Deforestation in the Amazon basin accelerated by 12% in 2022 relative to the 2018–2021 baseline",
+    "source_url": "https://api.worldbank.org/v2/country/BR/indicator/AG.LND.FRST.ZS?format=json&mrv=5",
+    "source_description": "World Bank AG.LND.FRST.ZS — Brazil forest area 2022",
+    "raw_source_bytes": "W1t7InBhZ2UiOjF9XSxbeyJpbmRpY2F0b3IiOnsiY29kZSI6IkFHLkxORC5GUlNULlpTIn0sImNvdW50cnkiOnsiY29kZSI6IkJSIn0sInZhbHVlIjo1NS4xLCJkYXRlIjoiMjAyMiJ9XV0=",
+    "confidence": 0.89,
+    "causal_summary": "land_use_change → forest_cover_loss (0.89); forest_cover_loss → carbon_release (0.91)"
+  }
+]

@@ -1,0 +1,69 @@
+version: '3.9'
+
+services:
+  axl-node-1:
+    image: alpine:3.18
+    volumes:
+      - /workspace/axl-node:/usr/local/bin/axl:ro
+      - axl-data-1:/data
+    command: >
+      axl start
+      --name simoproof-node-1
+      --api-port 7001
+      --tcp-port 9001
+      --listen tls://0.0.0.0:9001
+      --data-dir /data
+    ports:
+      - "7001:7001"
+      - "9001:9001"
+    networks:
+      - axl-net
+
+  axl-node-2:
+    image: alpine:3.18
+    volumes:
+      - /workspace/axl-node:/usr/local/bin/axl:ro
+      - axl-data-2:/data
+    command: >
+      axl start
+      --name simoproof-node-2
+      --api-port 7002
+      --tcp-port 9002
+      --peer tls://axl-node-1:9001
+      --data-dir /data
+    ports:
+      - "7002:7002"
+      - "9002:9002"
+    networks:
+      - axl-net
+    depends_on:
+      - axl-node-1
+
+  axl-node-3:
+    image: alpine:3.18
+    volumes:
+      - /workspace/axl-node:/usr/local/bin/axl:ro
+      - axl-data-3:/data
+    command: >
+      axl start
+      --name simoproof-node-3
+      --api-port 7003
+      --tcp-port 9003
+      --peer tls://axl-node-1:9001
+      --data-dir /data
+    ports:
+      - "7003:7003"
+      - "9003:9003"
+    networks:
+      - axl-net
+    depends_on:
+      - axl-node-1
+
+volumes:
+  axl-data-1:
+  axl-data-2:
+  axl-data-3:
+
+networks:
+  axl-net:
+    driver: bridge

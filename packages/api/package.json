@@ -1,0 +1,27 @@
+{
+  "name": "@simoproof/api",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./server": "./src/server.ts"
+  },
+  "scripts": {
+    "start": "tsx src/server.ts"
+  },
+  "dependencies": {
+    "@simoproof/axl": "*",
+    "@simoproof/chain": "*",
+    "@simoproof/keeperhub": "*",
+    "@simoproof/mock-discovery": "*",
+    "@simoproof/simocracy": "*",
+    "@simoproof/storage": "*",
+    "@simoproof/types": "*",
+    "dotenv": "^16.0.0",
+    "express": "^4.18.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0"
+  }
+}
