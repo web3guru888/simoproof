@@ -1,0 +1,14 @@
+{
+  "name": "@simoproof/axl",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@0xagentio/axl-client": "^0.1.0",
+    "@0xagentio/axl-local": "^0.1.0",
+    "@simoproof/types": "*"
+  }
+}

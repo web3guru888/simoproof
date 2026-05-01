@@ -1,0 +1,13 @@
+{
+  "name": "@simoproof/chain",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@simoproof/types": "*",
+    "viem": "^2.0.0"
+  }
+}
