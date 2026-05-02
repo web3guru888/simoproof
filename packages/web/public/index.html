@@ -778,11 +778,11 @@ const ENS_NAME     = 'node-1.simoproof.eth';
 const DISCOVERIES = [
   {
     id:         'disc-001',
-    claim:      'Thailand per-capita CO₂ emissions exceeded 4.0 tonnes in 2022, driven by industrial activity.',
-    confidence: 0.91,
-    source:     'World Bank API',
-    causal:     'industrial_activity → co2_per_capita (0.91)',
-    votes:      { 'bayesian':    'ENDORSE', 'domain':    'REJECT', 'causal':    'REJECT', 'replication': 'ENDORSE' },
+    claim:      'Arctic sea ice minimum extent in September 2023 was 4.23 million km², among the five lowest on record since 1979, per NSIDC Sea Ice Index v3.0.',
+    confidence: 0.97,
+    source:     'NSIDC Sea Ice Index v3.0',
+    causal:     'arctic_warming → sea_ice_loss (0.97); ghg_concentration → arctic_warming (0.96)',
+    votes:      { 'bayesian':    'ENDORSE', 'domain':    'ENDORSE', 'causal':    'ENDORSE', 'replication': 'ENDORSE' },
     easUid:     '0x2443c5c7e9cf66f30ea071a6707b7dbfc45f4ce8d006ea1800732eba6413f7f4',
   },
   {

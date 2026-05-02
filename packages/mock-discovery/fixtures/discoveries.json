@@ -1,12 +1,12 @@
 [
   {
     "id": "disc-001",
-    "claim": "Thailand per-capita CO2 emissions exceeded 4.0 tonnes in 2022",
-    "source_url": "https://api.worldbank.org/v2/country/TH/indicator/EN.ATM.CO2E.PC?format=json&mrv=3",
-    "source_description": "World Bank EN.ATM.CO2E.PC indicator, Thailand 2022",
-    "raw_source_bytes": "W1t7InBhZ2UiOjEsInBhZ2VzIjoxLCJwZXJfcGFnZSI6IjUwIiwidG90YWwiOjF9XSxbeyJpbmRpY2F0b3IiOnsiY29kZSI6IkVOLkFUTS5DTzJFLlBDIn0sImNvdW50cnkiOnsiY29kZSI6IlRIIn0sInZhbHVlIjo0LjEyLCJkYXRlIjoiMjAyMiJ9XV0=",
-    "confidence": 0.91,
-    "causal_summary": "industrial_activity → co2_per_capita (0.91)"
+    "claim": "Arctic sea ice minimum extent in September 2023 was 4.23 million km², among the five lowest on record since satellite measurements began in 1979, according to NSIDC Sea Ice Index v3.0",
+    "source_url": "https://nsidc.org/data/seaice_index/",
+    "source_description": "NSIDC Sea Ice Index v3.0 — National Snow and Ice Data Center, September 2023 minimum",
+    "raw_source_bytes": "eyJzb3VyY2UiOiAiTlNJREMgU2VhIEljZSBJbmRleCB2My4wIiwgInllYXIiOiAyMDIzLCAibW9udGgiOiA5LCAiZXh0ZW50X21pbGxpb25fa20yIjogNC4yMywgInJhbmsiOiA1LCAiYmFzZWxpbmVfMTk4MV8yMDEwIjogNi4zMywgImFub21hbHkiOiAtMi4xfQ==",
+    "confidence": 0.97,
+    "causal_summary": "arctic_warming → sea_ice_loss (0.97); ghg_concentration → arctic_warming (0.96)"
   },
   {
     "id": "disc-002",
