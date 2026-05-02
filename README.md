@@ -16,8 +16,10 @@ A ZK-provable, ENS-native, decentralised protocol for verifying empirical claims
 
 | Component | Network | Address / Name |
 |-----------|---------|----------------|
-| **DiscoveryVerifier.sol** | Base Sepolia (84532) | [`0x5508C6aC4E85C3458bfceaD1DBcE1F66bf78c1E6`](https://sepolia.basescan.org/address/0x5508C6aC4E85C3458bfceaD1DBcE1F66bf78c1E6) |
+| **DiscoveryVerifier.sol** | Base Sepolia (84532) | [`0x902e138Be827c6AE8504Cfd2E54caeb2910690Dc`](https://sepolia.basescan.org/address/0x902e138Be827c6AE8504Cfd2E54caeb2910690Dc) |
+| **MockRiscZeroVerifier** | Base Sepolia (84532) | [`0x844acEb55db4e96a862692C2663BF97DC7E73708`](https://sepolia.basescan.org/address/0x844acEb55db4e96a862692C2663BF97DC7E73708) |
 | **EAS Schema** | Base Sepolia | [`0x86704ade...319a2`](https://base-sepolia.easscan.org/schema/view/0x86704ade90c66f1fc5071d0a00e8d0c5055f4c5048d8ae2d7866cf55b3a319a2) |
+| **Live EAS Attestation** | Base Sepolia | [`0x2443c5c7...7f4`](https://base-sepolia.easscan.org/attestation/view/0x2443c5c7e9cf66f30ea071a6707b7dbfc45f4ce8d006ea1800732eba6413f7f4) |
 | **RISC Zero Verifier** | Base Sepolia | [`0x0b144e07...b711`](https://sepolia.basescan.org/address/0x0b144e07a0826182b6b59788c34b32bfa86fb711) |
 | **ENS Parent** | Sepolia | [`simoproof.eth`](https://sepolia.app.ens.domains/name/simoproof.eth) |
 | **ENS Node Identity** | Sepolia | [`node-1.simoproof.eth`](https://sepolia.app.ens.domains/name/node-1.simoproof.eth) |
@@ -280,7 +282,7 @@ See [`.env.example`](.env.example) for the full list with comments. All values b
 | `PRIVATE_KEY` | Deployer wallet | ✅ set |
 | `SEPOLIA_RPC` | Ethereum Sepolia RPC | ✅ `publicnode.com` |
 | `BASE_SEPOLIA_RPC` | Base Sepolia RPC | ✅ `publicnode.com` |
-| `DISCOVERY_VERIFIER_ADDRESS` | Deployed contract on Base Sepolia | ✅ `0x5508C6…` |
+| `DISCOVERY_VERIFIER_ADDRESS` | Deployed contract on Base Sepolia | ✅ `0x902e138…` (v2 — MockRiscZeroVerifier) |
 | `DISCOVERY_SCHEMA_UID` | EAS schema on Base Sepolia | ✅ `0x86704a…` |
 | `RISC0_VERIFIER_ADDRESS` | RISC Zero router (Base Sepolia) | ✅ `0x0b144e…` |
 | `GUEST_IMAGE_ID` | zkVM guest image ID (bytes32) | ✅ `0x4220fe…` |
