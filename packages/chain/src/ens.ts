@@ -13,8 +13,8 @@ import {
 import { sepolia } from 'viem/chains';
 import { privateKeyToAccount } from 'viem/accounts';
 
-// ENS Public Resolver on Sepolia
-const PUBLIC_RESOLVER = '0x8FADE66B79cC9f707aB26799354482EB93a5B7dD' as `0x${string}`;
+// ENS Public Resolver on Sepolia (from docs.ens.domains/learn/deployments)
+const PUBLIC_RESOLVER = '0xE99638b40E4Fff0129D56f03b55b6bbC4BBE49b5' as `0x${string}`;
 
 // ENS Registry on Sepolia
 const ENS_REGISTRY = '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e' as `0x${string}`;
