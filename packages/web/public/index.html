@@ -1235,6 +1235,8 @@ const PRESETS = [
     claim: 'Arctic sea ice minimum extent in September 2023 was 4.23 million km², among the five lowest on record since satellite measurements began in 1979, per NSIDC Sea Ice Index v3.0.',
     conf: 0.97, source: 'NSIDC Sea Ice Index v3.0',
     causal: 'arctic_warming → sea_ice_loss (0.97)',
+    // Real EAS UID from confirmed pipeline run on Base Sepolia
+    easUid: '0xd47257e63d2b5df37b78e33e00151cc63b33499c63c5fdbbe7b5317c167a7c64',
     senate: {
       bayesian: { v:'E', r:'NSIDC is the gold-standard satellite record. Posterior ≥ 0.95 given multi-year consistency and high confidence score.' },
       domain:   { v:'E', r:'No fatal flaws. September 2023 ranking is well-documented in peer-reviewed cryosphere literature.' },
@@ -1246,6 +1248,7 @@ const PRESETS = [
     claim: 'Global average surface temperature anomaly reached +1.45°C above pre-industrial baseline in 2023, making it the warmest year in the instrumental record.',
     conf: 0.97, source: 'NASA GISS / NOAA / Berkeley Earth',
     causal: 'ghg_concentration → radiative_forcing → surface_temperature_anomaly (0.97)',
+    easUid: '0x882247eec16952c5e0732bbc4c815d97effa5b2a9e73a8bfae7fa95420eafa7a',
     senate: {
       bayesian: { v:'E', r:'Prior 0.96; five independent agencies corroborate (NASA, NOAA, Berkeley Earth, JMA, ECMWF). Posterior: 0.97.' },
       domain:   { v:'R', r:'Pre-industrial baseline varies by agency (1850–1900 vs 1951–1980); could shift stated value by ±0.1°C.' },
@@ -1257,6 +1260,7 @@ const PRESETS = [
     claim: 'Global mean atmospheric CO₂ concentration reached 421.08 ppm in 2023, up from 411.44 ppm in 2019 — an increase of 9.64 ppm over four years.',
     conf: 0.99, source: 'NOAA GML Mauna Loa Observatory',
     causal: 'fossil_fuel_combustion + land_use → atmospheric_co2_accumulation (0.99)',
+    easUid: '0x5951be3cb56cdadeb687e50e4dea5b01865bac2b03ac554d207006a53fff09f6',
     senate: {
       bayesian: { v:'E', r:'Mauna Loa is the canonical CO₂ record, continuously operated since 1958. Posterior: 0.99.' },
       domain:   { v:'E', r:'No flaws. Measurement uncertainty < 0.1 ppm. Cross-validated with Cape Grim and South Pole stations.' },
@@ -1268,6 +1272,7 @@ const PRESETS = [
     claim: 'PM2.5 concentrations above 100 µg/m³ correlate with a 23% increase in respiratory hospital admissions in urban Southeast Asia.',
     conf: 0.87, source: 'WHO GHO AQH_29 — SEARO region',
     causal: 'pm25_concentration → airway_inflammation → hospital_admissions (0.82)',
+    easUid: '0xf0991d197a3e1904fd9893a4ab6820ac22aecf01c06fef7e5bfbc64bb3a5eff6',
     senate: {
       bayesian: { v:'E', r:'WHO data + 0.87 confidence + established dose-response relationship. Posterior ≥ 0.88.' },
       domain:   { v:'R', r:'23% is a regional average — healthcare access variation, seasonal burning patterns are confounders.' },
@@ -1279,6 +1284,7 @@ const PRESETS = [
     claim: 'Brazil\'s forest area declined to 55.1% of total land area in 2022, down from 58.9% in 2018 — a net reduction of 3.8 percentage points over four years.',
     conf: 0.89, source: 'World Bank AG.LND.FRST.ZS',
     causal: 'agricultural_expansion + logging → amazon_forest_cover_reduction (0.89)',
+    easUid: '0xddeb0ec4b6680369965bb12a12e980e045f7862bd9bcf7341073faa99287409a',
     senate: {
       bayesian: { v:'E', r:'World Bank forest data from satellite imagery. 3.8pp decline over 4 years plausible. Posterior: 0.87.' },
       domain:   { v:'R', r:'World Bank forest data has 2-year reporting lag; 2022 figures may use projected, not finalized, satellite counts.' },
@@ -1477,11 +1483,14 @@ async function runPipeline() {
   showPanel(0);
 
   // Pick outcomes
-  const preset = PRESETS.find(p => p.claim === claim) || PRESETS[0];
+  const preset = PRESETS.find(p => p.claim === claim);
   const outcomes = preset ? preset.senate : randomSenate();
-  const conf = preset ? preset.conf : 0.88;
-  const source = preset ? preset.source : 'Custom Source';
-  const fakeEasUid  = '0x' + rh(64);
+  const conf     = preset ? preset.conf   : 0.88;
+  const source   = preset ? preset.source : 'Custom Source';
+  // Use the real on-chain EAS UID for preset claims; for custom claims
+  // we don't have a live UID so we leave it null and link to the schema.
+  const realEasUid = preset?.easUid ?? null;
+  const displayUid = realEasUid || ('0x' + rh(64)); // shown in UI only
   const fakeTxHash  = '0x' + rh(64);
   const fakeCid     = '0x' + rh(64);
   const fakeImageId = '0x4220fefa6dab2f88ffeeeb5048ae2df22385f2e00cfd5c12b1ab33e00b718ba2';
@@ -1575,11 +1584,21 @@ async function runPipeline() {
   $('runStatus').textContent = 'Step 5/7 — EAS Attestation…';
   $('easContent').innerHTML = `<div style="font-family:var(--mono);font-size:.78rem;color:var(--lime);animation:blink .7s infinite">⏳ Submitting to DiscoveryVerifier.sol…</div>`;
   await sleep(800);
+  // For preset claims: link directly to the real attestation.
+  // For custom claims: link to the schema page which shows all real attestations.
+  const easViewUrl = realEasUid
+    ? `https://base-sepolia.easscan.org/attestation/view/${realEasUid}`
+    : `https://base-sepolia.easscan.org/schema/view/${SCHEMA_UID}`;
+  const easLinkLabel = realEasUid ? '🔗 View Live Attestation on EAS Scan →' : '🔗 View All Attestations (Schema) →';
+  const uidNote = realEasUid
+    ? ''
+    : `<div style="font-size:.68rem;color:var(--muted);margin-top:.3rem;font-family:var(--mono)">↑ Simulated UID — custom claims need the live API. Real attestations visible via schema link below.</div>`;
   $('easContent').innerHTML = `
     <div style="font-size:.88rem;font-weight:600;color:var(--lime);margin-bottom:.3rem">✅ Attestation Created On-Chain</div>
-    <div class="eas-uid-display">${fakeEasUid}</div>
-    <a class="eas-ext-link" href="https://base-sepolia.easscan.org/attestation/view/${fakeEasUid}" target="_blank">
-      🔗 View on EAS Scan →
+    <div class="eas-uid-display">${displayUid}</div>
+    ${uidNote}
+    <a class="eas-ext-link" href="${easViewUrl}" target="_blank">
+      ${easLinkLabel}
     </a>
     <div class="eas-fields" style="margin-top:.75rem">
       <div class="eas-field"><div class="ef-key">schema</div><div class="ef-val">${SCHEMA_UID.slice(0,20)}…</div></div>
@@ -1606,7 +1625,7 @@ async function runPipeline() {
   await sleep(700);
   $('ensContent').innerHTML = `
     <div class="ens-record"><span class="erk">discoveries_count</span><span class="erv flash" id="ens-count">${newCount}</span></div>
-    <div class="ens-record"><span class="erk">latest_eas_uid</span><span class="erv flash">${fakeEasUid.slice(0,22)}…</span></div>
+    <div class="ens-record"><span class="erk">latest_eas_uid</span><span class="erv flash">${(realEasUid || displayUid).slice(0,22)}…</span></div>
     <div class="ens-record"><span class="erk">agent_type</span><span class="erv">verified-discovery-node</span></div>
     <div class="ens-record"><span class="erk">network</span><span class="erv">base-sepolia</span></div>
     <div class="ens-record"><span class="erk">schema_uid</span><span class="erv">${SCHEMA_UID.slice(0,22)}…</span></div>
@@ -1639,9 +1658,9 @@ async function runPipeline() {
 
   showResult(true, 'Discovery Verified On-Chain',
     `${endorseCount}/4 senate endorsements · ZK proof committed · EAS attestation permanent · ENS updated`,
-    fakeEasUid, fakeTxHash);
+    realEasUid, SCHEMA_UID);
 
-  addToFeed(claim, fakeEasUid);
+  addToFeed(claim, realEasUid || displayUid);
   finishRun();
 }
 
@@ -1659,7 +1678,7 @@ function randomSenate() {
   };
 }
 
-function showResult(ok, title, desc, easUid, txHash) {
+function showResult(ok, title, desc, easUid, schemaUid) {
   const banner = $('resultBanner');
   banner.className = 'result-banner open ' + (ok ? 'ok' : 'err');
   $('resultEmoji').textContent = ok ? '✅' : '❌';
@@ -1667,9 +1686,14 @@ function showResult(ok, title, desc, easUid, txHash) {
   $('resultDesc').textContent = desc;
   const links = $('resultLinks');
   links.innerHTML = '';
-  if (ok && easUid) {
+  if (ok) {
+    // easUid is the real on-chain UID for preset claims, null for custom.
+    const easHref = easUid
+      ? `https://base-sepolia.easscan.org/attestation/view/${easUid}`
+      : `https://base-sepolia.easscan.org/schema/view/${schemaUid}`;
+    const easLabel = easUid ? 'View EAS →' : 'All Attestations →';
     links.innerHTML = `
-      <a class="result-link" href="https://base-sepolia.easscan.org/attestation/view/${easUid}" target="_blank">View EAS →</a>
+      <a class="result-link" href="${easHref}" target="_blank">${easLabel}</a>
       <a class="result-link" href="https://app.ens.domains/node-1.simoproof.eth" target="_blank">View ENS →</a>
     `;
   }

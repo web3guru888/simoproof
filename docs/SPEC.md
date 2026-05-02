@@ -1,65 +1,63 @@
 # SimoProof — Technical Specification
-**Version:** 1.0  
-**Date:** 2026-04-30  
+**Version:** 2.0 (updated May 2, 2026 — reflects as-built system)  
+**Date:** 2026-05-02  
 **Target Event:** ETHGlobal Open Agents (April 24 – May 6, 2026)  
-**Selected Prize Tracks:** ENS (4a) + KeeperHub (5a + 5b) + Gensyn AXL (3a)
+**Selected Prize Tracks:** ENS + KeeperHub + Gensyn AXL  
+**Status:** ✅ IMPLEMENTED
 
 ---
 
 ## 1. System Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                        SimoProof Network                             │
-│                                                                      │
-│   ┌──────────────────┐  AXL P2P (encrypted)  ┌──────────────────┐  │
-│   │  Agent: Alice    │◄─────────────────────►│  Agent: Bob      │  │
-│   │  alice.agents.eth│                        │  bob.agents.eth  │  │
-│   │  AXL Node 1      │                        │  AXL Node 2      │  │
-│   │  :9002           │                        │  :9003           │  │
-│   └────────┬─────────┘                        └────────┬─────────┘  │
-│            │          AXL P2P (encrypted)              │             │
-│            └──────────────────┬───────────────────────┘             │
-│                               │                                      │
-│                      ┌────────▼─────────┐                           │
-│                      │  Agent: Carol    │                           │
-│                      │ carol.agents.eth │                           │
-│                      │  AXL Node 3      │                           │
-│                      │  :9004           │                           │
-│                      └────────┬─────────┘                           │
-└───────────────────────────────│─────────────────────────────────────┘
-                                │
-                    ┌───────────▼────────────┐
-                    │     KeeperHub MCP      │
-                    │  (execution layer)     │
-                    │  keeperhub.com         │
-                    └───────────┬────────────┘
-                                │
-          ┌─────────────────────▼──────────────────────┐
-          │           Ethereum Sepolia                   │
-          │                                             │
-          │  ┌─────────────┐  ┌──────────────────────┐ │
-          │  │ ENS Subname │  │ EAS Schema Registry  │ │
-          │  │ Registrar   │  │ (SimoProof schema)   │ │
-          │  │*.agents.eth │  │                      │ │
-          │  └─────────────┘  └──────────────────────┘ │
-          │  ┌─────────────────────────────────────────┐│
-          │  │ ERC-8004 Agent Registry (Reference)     ││
-          │  └─────────────────────────────────────────┘│
-          └─────────────────────────────────────────────┘
+                    ┌─────────────────────────────────────────┐
+                    │              SimoProof Node              │
+                    │         node-1.simoproof.eth             │
+                    └──────────────────┬──────────────────────┘
+                                       │
+                    ┌──────────────────▼──────────────────────┐
+                    │           7-Step Pipeline                │
+                    │                                         │
+                    │  [1] AXL Broadcast (Gensyn)             │
+                    │       ↓                                  │
+                    │  [2] Simocracy Senate (ASI:One LLM)      │
+                    │       4 senators, 2/4 threshold          │
+                    │       ↓                                  │
+                    │  [3] RISC Zero ZK Proof                  │
+                    │       Rust guest program                 │
+                    │       ↓                                  │
+                    │  [4] 0G Storage Upload                   │
+                    │       testnet.0g.ai                      │
+                    │       ↓                                  │
+                    │  [5] EAS Attestation (Base Sepolia)      │
+                    │       DiscoveryVerifier.sol              │
+                    │       ↓                                  │
+                    │  [6] ENS Text Record Update              │
+                    │       ENSIP-25 (Sepolia)                 │
+                    │       ↓                                  │
+                    │  [7] KeeperHub Workflow Log              │
+                    │       app.keeperhub.com                  │
+                    └─────────────────────────────────────────┘
+                                       │
+              ┌────────────────────────▼────────────────────────┐
+              │                 Cloudflare Pages                 │
+              │              https://simoproof.org               │
+              │          Interactive Demo Frontend               │
+              └─────────────────────────────────────────────────┘
 ```
 
-### Component Summary
+### Live Deployments
 
-| Component | Tech | Purpose |
-|-----------|------|---------|
-| `axl-node` | Go 1.25.x binary | Encrypted P2P communication between agents |
-| `agent-runtime` | TypeScript/Node.js | Core agent logic, AXL + KeeperHub + ENS orchestration |
-| `contracts` | Solidity 0.8.x | ENS subname registrar + EAS schema definition |
-| `frontend` | Next.js 14 + Tailwind | Demo visualization UI |
-| ENS | Sepolia ENS | Agent identity, metadata storage, discovery |
-| KeeperHub | External service | Reliable onchain execution (MCP server) |
-| EAS | Sepolia EAS | Behavioral attestations per agent ENS name |
+| Component | Network | Address / Value |
+|-----------|---------|-----------------|
+| `DiscoveryVerifier.sol` | Base Sepolia (84532) | `0x5508C6aC4E85C3458bfceaD1DBcE1F66bf78c1E6` |
+| `MockRiscZeroVerifier` | Base Sepolia (84532) | Deployed with DiscoveryVerifier |
+| EAS Schema UID | Base Sepolia | `0x86704ade90c66f1fc5071d0a00e8d0c5055f4c5048d8ae2d7866cf55b3a319a2` |
+| RISC Zero Verifier Router | Base Sepolia | `0x0b144e07a0826182b6b59788c34b32bfa86fb711` |
+| Guest Image ID | — | `0x4220fefa6dab2f88ffeeeb5048ae2df22385f2e00cfd5c12b1ab33e00b718ba2` |
+| `simoproof.eth` | Sepolia | `0xB05741aF6f90666Ce27372001CEfC36Cab9bE580` |
+| `node-1.simoproof.eth` | Sepolia | `0xB05741aF6f90666Ce27372001CEfC36Cab9bE580` |
+| Frontend | Cloudflare Pages | https://simoproof.org |
 
 ---
 
@@ -67,919 +65,601 @@
 
 ```
 simoproof/
-├── packages/
-│   ├── axl-bridge/         # Go AXL node wrapper + HTTP bridge
-│   │   ├── cmd/node/       # AXL node entrypoint
-│   │   ├── node-config.alice.json
-│   │   ├── node-config.bob.json
-│   │   ├── node-config.carol.json
-│   │   └── README.md
-│   │
-│   ├── agent-runtime/      # TypeScript agent SDK
-│   │   ├── src/
-│   │   │   ├── identity/   # ENS resolution, ENSIP-25 text records
-│   │   │   ├── comms/      # AXL client (HTTP to localhost:9002)
-│   │   │   ├── execution/  # KeeperHub MCP integration
-│   │   │   ├── reputation/ # EAS read/write
-│   │   │   └── agent.ts    # SimoProofAgent class
-│   │   ├── package.json
-│   │   └── README.md
-│   │
-│   ├── contracts/          # Solidity smart contracts
-│   │   ├── src/
-│   │   │   ├── AgentsSubnameRegistrar.sol
-│   │   │   └── SimoProofEASSchema.sol
-│   │   ├── script/         # Deployment scripts (Foundry)
-│   │   ├── test/
-│   │   └── foundry.toml
-│   │
-│   └── frontend/           # Next.js demo app
-│       ├── src/
-│       │   ├── app/
-│       │   ├── components/
-│       │   │   ├── AgentCard.tsx
-│       │   │   ├── AXLMessageLog.tsx
-│       │   │   ├── KeeperHubStatus.tsx
-│       │   │   └── EASReputation.tsx
-│       │   └── hooks/
-│       ├── package.json
-│       └── README.md
+├── contracts/                    # Solidity smart contracts (Foundry)
+│   ├── src/
+│   │   └── DiscoveryVerifier.sol # Main verification contract + EAS integration
+│   ├── script/
+│   │   └── Deploy.s.sol          # Foundry deployment script
+│   ├── test/
+│   │   └── DiscoveryVerifier.t.sol # 8 passing tests
+│   └── foundry.toml
 │
-├── FEEDBACK.md             # ← CRITICAL: KeeperHub feedback bounty (repo root)
-├── README.md               # Project overview + setup
-├── docker-compose.yml      # Spins up all 3 AXL nodes + demo agents
-└── package.json            # Monorepo root (pnpm workspaces)
+├── packages/
+│   ├── axl/                      # Gensyn AXL integration
+│   │   └── src/axl-client.ts     # AXL broadcast + peer pre-validation
+│   │
+│   ├── simocracy/                # 4-agent deliberation senate
+│   │   └── src/senate.ts         # Senate runner, ASI:One LLM calls, consensus
+│   │
+│   ├── prover/                   # RISC Zero ZK prover
+│   │   ├── src/main.rs           # Rust guest program
+│   │   ├── Cargo.toml
+│   │   └── build.sh              # Compiles Rust → guest binary
+│   │
+│   ├── zero-g/                   # 0G decentralized storage
+│   │   └── src/storage.ts        # Upload source data to 0G testnet
+│   │
+│   ├── eas/                      # EAS attestation
+│   │   └── src/attest.ts         # Submit attestation to DiscoveryVerifier
+│   │
+│   ├── ens/                      # ENS / ENSIP-25 integration
+│   │   └── src/ens-updater.ts    # Update text records on node-1.simoproof.eth
+│   │
+│   ├── keeperhub/                # KeeperHub MCP server
+│   │   ├── src/server.ts         # MCP server (6 tools)
+│   │   └── src/jobs.ts           # 5 KeeperHub workflow creation
+│   │
+│   ├── api/                      # Express REST API
+│   │   └── src/server.ts         # /health, /api/discoveries, /api/discovery/submit
+│   │
+│   ├── mock-discovery/           # Test fixtures
+│   │   └── fixtures/
+│   │       └── discoveries.json  # 5 pre-loaded discovery fixtures
+│   │
+│   └── web/                      # Frontend demo
+│       └── public/index.html     # Single-page "Scientific Tribunal" UI
+│
+├── scripts/
+│   └── demo.ts                   # Main pipeline runner (--all, --discovery disc-001)
+│
+├── sims/                         # Senator constitutions
+│   ├── bayesian-reasoner/SKILL.md
+│   ├── causal-analyst/SKILL.md
+│   ├── domain-skeptic/SKILL.md
+│   └── replication-auditor/SKILL.md
+│
+├── docs/
+│   ├── PRD.md                    # Product Requirements Document
+│   └── SPEC.md                   # This file
+│
+├── FEEDBACK.md                   # ← REQUIRED: KeeperHub feedback bounty (repo root)
+├── AI_ATTRIBUTION.md             # AI tool disclosure
+├── PLAN.md                       # Submission plan + evidence checklist
+├── README.md                     # Project overview + setup
+├── package.json                  # pnpm workspaces monorepo root
+└── .env.example                  # Environment template (no real keys)
 ```
 
-> ⚠️ **FEEDBACK.md must be at repo root** — required for KeeperHub feedback bounty eligibility. Omitting this is disqualifying.
+> ⚠️ **FEEDBACK.md must be at repo root** — required for KeeperHub feedback bounty eligibility.
 
 ---
 
 ## 3. Smart Contracts
 
-### 3.1 AgentsSubnameRegistrar.sol
+### 3.1 DiscoveryVerifier.sol
 
-**Network:** Ethereum Sepolia  
-**Purpose:** Allow anyone to register `<name>.agents.eth` as their agent's ENS identity.
+**Network:** Base Sepolia (84532)  
+**Address:** `0x5508C6aC4E85C3458bfceaD1DBcE1F66bf78c1E6`  
+**Purpose:** Verify RISC Zero ZK receipts and create EAS attestations for verified discoveries.
 
 ```solidity
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.24;
 
-import "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
-import "@ensdomains/ens-contracts/contracts/resolvers/PublicResolver.sol";
-
 /**
- * @title AgentsSubnameRegistrar
- * @notice Registers <label>.agents.eth subnames for SimoProof agents.
- *         Stores ENSIP-25 text records at registration time.
- * @dev Deployed at [ADDRESS] on Sepolia. Parent name: agents.eth
+ * @title DiscoveryVerifier
+ * @notice Verifies RISC Zero proofs for empirical discoveries and creates EAS attestations.
+ * @dev Deployed on Base Sepolia. Uses MockRiscZeroVerifier in RISC0_DEV_MODE.
  */
-contract AgentsSubnameRegistrar {
-    ENS public immutable ens;
-    PublicResolver public immutable resolver;
-    bytes32 public immutable parentNode; // namehash("agents.eth")
+contract DiscoveryVerifier {
+    // EAS on Base Sepolia
+    IEAS public immutable eas;
+    // RISC Zero verifier (real or mock depending on deploy mode)
+    IRiscZeroVerifier public immutable riscZeroVerifier;
+    // Schema UID: bytes32,bytes32,bytes32,bytes,string,address,string
+    bytes32 public immutable schemaUID;
+    // Guest image ID for the prover
+    bytes32 public immutable imageId;
 
-    // Track registrations
-    mapping(bytes32 => address) public nodeToOwner;
-    mapping(address => bytes32) public ownerToNode;
-
-    event AgentRegistered(
-        bytes32 indexed node,
-        string label,
-        address indexed owner,
-        string capabilities,
-        string axlPubkey
+    event DiscoveryVerified(
+        bytes32 indexed claimHash,
+        bytes32 indexed uid,
+        address indexed node,
+        string ensName
     );
 
-    constructor(address _ens, address _resolver, bytes32 _parentNode) {
-        ens = ENS(_ens);
-        resolver = PublicResolver(_resolver);
-        parentNode = _parentNode;
-    }
-
     /**
-     * @notice Register a new agent subname with ENSIP-25 metadata
-     * @param label       The subdomain label (e.g., "alice" for alice.agents.eth)
-     * @param capabilities JSON string of agent capabilities (e.g., '["research","execute"]')
-     * @param axlPubkey   64-char hex ed25519 public key for AXL communication
-     * @param registryId  ERC-8004 agent registry ID (or "" if not yet registered)
+     * @notice Submit a verified discovery
+     * @param claimHash      keccak256 of the claim text
+     * @param sourceCommit   keccak256 of the source data
+     * @param consensusHash  keccak256 of senate votes
+     * @param zkProof        RISC Zero Groth16 receipt (or dev-mode receipt)
+     * @param storageCid     0G storage CID
+     * @param ensName        ENS name of verifying node
      */
-    function registerAgent(
-        string calldata label,
-        string calldata capabilities,
-        string calldata axlPubkey,
-        string calldata registryId
-    ) external {
-        bytes32 labelHash = keccak256(bytes(label));
-        bytes32 node = keccak256(abi.encodePacked(parentNode, labelHash));
-
-        require(nodeToOwner[node] == address(0), "Already registered");
-
-        // Register in ENS
-        ens.setSubnodeRecord(
-            parentNode,
-            labelHash,
-            msg.sender,
-            address(resolver),
-            0 // TTL
+    function submitDiscovery(
+        bytes32 claimHash,
+        bytes32 sourceCommit,
+        bytes32 consensusHash,
+        bytes calldata zkProof,
+        string calldata storageCid,
+        string calldata ensName
+    ) external returns (bytes32 uid) {
+        // Verify the ZK proof
+        riscZeroVerifier.verify(zkProof, imageId,
+            sha256(abi.encode(claimHash, sourceCommit, consensusHash))
         );
 
-        // Set address record
-        resolver.setAddr(node, msg.sender);
+        // Create EAS attestation
+        uid = eas.attest(AttestationRequest({
+            schema: schemaUID,
+            data: AttestationRequestData({
+                recipient: msg.sender,
+                expirationTime: 0,
+                revocable: true,
+                refUID: bytes32(0),
+                data: abi.encode(
+                    claimHash, sourceCommit, consensusHash,
+                    zkProof, storageCid, msg.sender, ensName
+                ),
+                value: 0
+            })
+        }));
 
-        // Set ENSIP-25 text records
-        resolver.setText(node, "capabilities", capabilities);
-        resolver.setText(node, "axl-pubkey", axlPubkey);
-
-        if (bytes(registryId).length > 0) {
-            // ENSIP-25 format: agent-registration[erc8004][<id>] = "1"
-            string memory ensip25Key = string.concat(
-                "agent-registration[erc8004][", registryId, "]"
-            );
-            resolver.setText(node, ensip25Key, "1");
-        }
-
-        // Store network text record: "network" = "simoproof"
-        resolver.setText(node, "network", "simoproof");
-
-        nodeToOwner[node] = msg.sender;
-        ownerToNode[msg.sender] = node;
-
-        emit AgentRegistered(node, label, msg.sender, capabilities, axlPubkey);
-    }
-
-    /**
-     * @notice Update AXL pubkey (e.g., on key rotation)
-     */
-    function updateAxlPubkey(bytes32 node, string calldata axlPubkey) external {
-        require(nodeToOwner[node] == msg.sender, "Not owner");
-        resolver.setText(node, "axl-pubkey", axlPubkey);
-    }
-
-    /**
-     * @notice Resolve agent by label — returns address + metadata
-     */
-    function resolveAgent(string calldata label) external view
-        returns (address owner, string memory capabilities, string memory axlPubkey)
-    {
-        bytes32 node = keccak256(abi.encodePacked(
-            parentNode,
-            keccak256(bytes(label))
-        ));
-        owner = nodeToOwner[node];
-        capabilities = resolver.text(node, "capabilities");
-        axlPubkey = resolver.text(node, "axl-pubkey");
+        emit DiscoveryVerified(claimHash, uid, msg.sender, ensName);
     }
 }
 ```
 
-**Deployment:**
+**Tests:** 8/8 Foundry tests passing in `contracts/test/DiscoveryVerifier.t.sol`
+
 ```bash
-# Foundry deploy to Sepolia
+# Run tests
+cd contracts && forge test --gas-report
+
+# Deploy to Base Sepolia
 forge script script/Deploy.s.sol \
-  --rpc-url $SEPOLIA_RPC \
+  --rpc-url $BASE_SEPOLIA_RPC \
   --private-key $PRIVATE_KEY \
-  --broadcast \
-  --verify
-```
-
-**ENS setup prerequisite:**
-```bash
-# Register agents.eth on Sepolia ENS, set registrar as controller
-# Then run contract deployment
+  --broadcast
 ```
 
 ---
 
-### 3.2 EAS Schema (No Contract Needed — Schema Registration)
+### 3.2 EAS Schema (Base Sepolia)
 
-**Schema registered via EAS SchemaRegistry on Sepolia**  
-**EAS Sepolia:** `0xC2679fBD37d54388Ce493F1DB75320D236e1815e`
+**Schema UID:** `0x86704ade90c66f1fc5071d0a00e8d0c5055f4c5048d8ae2d7866cf55b3a319a2`  
+**Explorer:** https://base-sepolia.easscan.org/schema/view/0x86704ade90c66f1fc5071d0a00e8d0c5055f4c5048d8ae2d7866cf55b3a319a2
 
 ```
-Schema string:
-"string agentENS, string taskType, bool outcome, string details, string verifierENS, uint256 timestamp"
+Schema: bytes32 claim_hash, bytes32 source_commitment, bytes32 consensus_hash, bytes zk_proof, string ipfs_cid, address atlas_node, string ens_name
+Resolver: 0x0000000000000000000000000000000000000000
+Revocable: true
 ```
 
-**Registration script (TypeScript):**
-```typescript
-import { EAS, SchemaRegistry } from "@ethereum-attestation-service/eas-sdk";
+**Live Attestations (5 confirmed):**
 
-const schemaRegistry = new SchemaRegistry(SCHEMA_REGISTRY_ADDRESS);
-schemaRegistry.connect(signer);
-
-const schema = "string agentENS,string taskType,bool outcome,string details,string verifierENS,uint256 timestamp";
-const resolverAddress = "0x0000000000000000000000000000000000000000"; // no resolver
-const revocable = true;
-
-const tx = await schemaRegistry.register({ schema, resolverAddress, revocable });
-await tx.wait();
-// Save returned schemaUID
-```
-
-**Store schemaUID in ENS text record:**
-```typescript
-resolver.setText(carolNode, "eas-schema", SIMOPROOF_SCHEMA_UID);
-```
+| Discovery | Claim | EAS UID |
+|-----------|-------|---------|
+| disc-001 | Arctic sea ice Sep 2023: 4.23M km² (NSIDC) | `0xd47257e63d2b5df37b78e33e00151cc63b33499c63c5fdbbe7b5317c167a7c64` |
+| disc-002 | Global surface temp +1.45°C (NOAA/WMO) | `0x882247eec16952c5e0732bbc4c815d97effa5b2a9e73a8bfae7fa95420eafa7a` |
+| disc-003 | Atmospheric CO₂ 421.08 ppm (Mauna Loa 2023) | `0x5951be3cb56cdadeb687e50e4dea5b01865bac2b03ac554d207006a53fff09f6` |
+| disc-004 | PM2.5 concentrations — IQ Air 2023 | `0xf0991d197a3e1904fd9893a4ab6820ac22aecf01c06fef7e5bfbc64bb3a5eff6` |
+| disc-005 | Brazil forest area — FAO 2020 | `0xddeb0ec4b6680369965bb12a12e980e045f7862bd9bcf7341073faa99287409a` |
 
 ---
 
-## 4. Gensyn AXL Integration
+## 4. Simocracy Senate
 
-### 4.1 AXL Node Setup
+### 4.1 Architecture
 
-```bash
-# Required: Go 1.25.x
-go version  # must be 1.25.x
-
-# Clone and build
-git clone https://github.com/gensyn-ai/axl.git
-cd axl
-go build -o node ./cmd/node/
-
-# Generate ed25519 keypairs for each agent
-openssl genpkey -algorithm ed25519 -out alice-private.pem
-openssl pkey -in alice-private.pem -pubout -out alice-public.pem
-
-openssl genpkey -algorithm ed25519 -out bob-private.pem
-openssl pkey -in bob-private.pem -pubout -out bob-public.pem
-
-openssl genpkey -algorithm ed25519 -out carol-private.pem
-openssl pkey -in carol-private.pem -pubout -out carol-public.pem
+```
+                    ┌─────────────────────┐
+                    │   Discovery Input    │
+                    │  { claim, source,    │
+                    │    confidence }      │
+                    └──────────┬──────────┘
+                               │
+              ┌────────────────▼────────────────┐
+              │         Senate Runner            │
+              │   (packages/simocracy/senate.ts) │
+              └────┬─────┬──────┬───────┬───────┘
+                   │     │      │       │
+            ┌──────▼──┐ ┌▼────┐ ┌▼─────┐ ┌▼──────────┐
+            │Bayesian │ │Causal│ │Domain│ │Replication│
+            │Reasoner │ │Anlst │ │Skeptic│ │Auditor   │
+            └──────┬──┘ └┬────┘ └┬─────┘ └┬──────────┘
+                   │     │       │         │
+                   └─────┴───────┴─────────┘
+                                │
+                    ┌───────────▼───────────┐
+                    │   Consensus: 2/4      │
+                    │   endorsements needed │
+                    │   → consensusHash     │
+                    └───────────────────────┘
 ```
 
-### 4.2 Node Configuration
+### 4.2 Senator Constitutions
 
-Three separate configs — each on a different port, each with its own identity:
+Each senator is defined by a SKILL.md in `sims/`:
 
-**`node-config.alice.json`:**
-```json
-{
-  "node": {
-    "privateKeyFile": "alice-private.pem",
-    "listenAddr": "127.0.0.1:9002",
-    "peers": ["127.0.0.1:9003", "127.0.0.1:9004"]
-  },
-  "api": {
-    "listenAddr": "127.0.0.1:9002"
-  }
+| Senator | File | Focus |
+|---------|------|-------|
+| Bayesian Reasoner | `sims/bayesian-reasoner/SKILL.md` | Prior probability, evidence weight, posterior update |
+| Causal Analyst | `sims/causal-analyst/SKILL.md` | Causal chain, confounders, alternative explanations |
+| Domain Skeptic | `sims/domain-skeptic/SKILL.md` | Null hypothesis defense, extraordinary claims threshold |
+| Replication Auditor | `sims/replication-auditor/SKILL.md` | Methodology, peer review status, replication record |
+
+### 4.3 Senate API
+
+```typescript
+// packages/simocracy/src/senate.ts
+
+interface SenateInput {
+  claim: string;
+  source: string;
+  confidence: number;
+  raw_source_bytes: string;  // base64
 }
+
+interface SenateResult {
+  endorsed: boolean;          // true if ≥ 2/4 senators endorse
+  votes: {
+    senator: string;
+    vote: 'ENDORSE' | 'REJECT';
+    reasoning: string;
+  }[];
+  consensusHash: string;      // keccak256 of all votes
+  endorsementCount: number;
+}
+
+async function runSenate(input: SenateInput): Promise<SenateResult>
 ```
 
-**`node-config.bob.json`:** (port 9003)  
-**`node-config.carol.json`:** (port 9004)
+### 4.4 LLM Configuration
 
-**Start all 3 nodes (Docker Compose):**
-```yaml
-# docker-compose.yml
-version: "3.9"
-services:
-  axl-alice:
-    build: ./packages/axl-bridge
-    command: ./node -config node-config.alice.json
-    ports: ["9002:9002"]
-    volumes: ["./keys:/keys"]
-
-  axl-bob:
-    build: ./packages/axl-bridge
-    command: ./node -config node-config.bob.json
-    ports: ["9003:9003"]
-    volumes: ["./keys:/keys"]
-
-  axl-carol:
-    build: ./packages/axl-bridge
-    command: ./node -config node-config.carol.json
-    ports: ["9004:9004"]
-    volumes: ["./keys:/keys"]
+```bash
+LLM_BASE_URL=https://api.asi1.ai/v1
+LLM_MODEL=asi1
+OPENAI_API_KEY=<ASI:One key>  # OpenAI-compatible header
 ```
 
-> ✅ **Gensyn hard requirement satisfied:** 3 separate AXL nodes, separate ports, separate ed25519 identities.
+ASI:One is used as the inference backend. It's an OpenAI-compatible API from Fetch.ai — the same organization that created the Fetch.ai/Agentverse ecosystem. Using it as the senate LLM is thematically consistent: a decentralized science verification network powered by a Web3-native AI.
 
-### 4.3 AXL Client (TypeScript)
+---
+
+## 5. Gensyn AXL Integration
+
+### 5.1 Pipeline Step 1: AXL Broadcast
 
 ```typescript
-// packages/agent-runtime/src/comms/axl-client.ts
+// packages/axl/src/axl-client.ts
 
-export interface AXLMessage {
-  type: "TaskRequest" | "TaskResult" | "VerificationRequest" | "AttestationProposal";
-  from: string;      // sender ENS name
-  to: string;        // recipient ENS name  
-  payload: unknown;
+interface AXLBroadcastResult {
+  peersReached: number;
+  preValidationConsensus: boolean;
+  nodeId: string;
   timestamp: number;
 }
 
-export class AXLClient {
-  private nodeUrl: string;  // e.g., "http://localhost:9002"
-  private agentPubkey: string;
-
-  constructor(nodePort: number, pubkey: string) {
-    this.nodeUrl = `http://localhost:${nodePort}`;
-    this.agentPubkey = pubkey;
-  }
-
-  /**
-   * Send a message to another agent via AXL
-   * Recipient identified by their AXL pubkey (retrieved from ENS)
-   */
-  async send(recipientPubkey: string, message: AXLMessage): Promise<void> {
-    const response = await fetch(`${this.nodeUrl}/send`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        to: recipientPubkey,
-        payload: JSON.stringify(message),
-      }),
-    });
-    if (!response.ok) throw new Error(`AXL send failed: ${response.statusText}`);
-  }
-
-  /**
-   * Poll for incoming messages
-   */
-  async receive(): Promise<AXLMessage[]> {
-    const response = await fetch(`${this.nodeUrl}/receive`);
-    const data = await response.json();
-    return data.messages?.map((m: { payload: string }) =>
-      JSON.parse(m.payload)
-    ) ?? [];
-  }
-
-  /**
-   * Get this node's peer ID (for display/verification)
-   */
-  async getPeerID(): Promise<string> {
-    const response = await fetch(`${this.nodeUrl}/id`);
-    const data = await response.json();
-    return data.id;
-  }
-}
+async function broadcastDiscovery(
+  discovery: DiscoveryInput,
+  axlBinaryPath: string,
+  port: number
+): Promise<AXLBroadcastResult>
 ```
 
-### 4.4 AXL-ENS Discovery Bridge
+### 5.2 ENS-Anchored AXL Discovery (Novel Primitive)
 
-The key innovation: **AXL pubkeys stored in ENS text records enable ENS-based AXL discovery.**
-
-```typescript
-// packages/agent-runtime/src/identity/ens-client.ts
-
-import { createPublicClient, http } from "viem";
-import { sepolia } from "viem/chains";
-import { normalize } from "viem/ens";
-
-export class ENSClient {
-  private client = createPublicClient({ chain: sepolia, transport: http() });
-
-  /**
-   * Resolve agent identity from ENS name
-   */
-  async resolveAgent(ensName: string): Promise<{
-    address: string;
-    capabilities: string[];
-    axlPubkey: string;
-    easSchema: string;
-  }> {
-    const name = normalize(ensName);
-
-    const [address, capabilities, axlPubkey, easSchema] = await Promise.all([
-      this.client.getEnsAddress({ name }),
-      this.client.getEnsText({ name, key: "capabilities" }),
-      this.client.getEnsText({ name, key: "axl-pubkey" }),
-      this.client.getEnsText({ name, key: "eas-schema" }),
-    ]);
-
-    if (!address) throw new Error(`ENS name not found: ${ensName}`);
-    if (!axlPubkey) throw new Error(`No AXL pubkey for: ${ensName}`);
-
-    return {
-      address,
-      capabilities: JSON.parse(capabilities ?? "[]"),
-      axlPubkey,
-      easSchema: easSchema ?? "",
-    };
-  }
-
-  /**
-   * Enumerate all .agents.eth subnames (via subgraph or registrar events)
-   */
-  async listAllAgents(): Promise<string[]> {
-    // Query AgentRegistered events from registrar contract
-    const logs = await this.client.getLogs({
-      address: REGISTRAR_ADDRESS,
-      event: parseAbiItem("event AgentRegistered(bytes32 indexed node, string label, address indexed owner, string capabilities, string axlPubkey)"),
-      fromBlock: DEPLOY_BLOCK,
-    });
-    return logs.map(log => `${log.args.label}.agents.eth`);
-  }
-}
-```
-
----
-
-## 5. KeeperHub Integration
-
-### 5.1 MCP Server Setup
-
-```typescript
-// packages/agent-runtime/src/execution/keeperhub-client.ts
-
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
-
-export class KeeperHubClient {
-  private mcpClient: Client;
-
-  async connect() {
-    const transport = new StdioClientTransport({
-      command: "npx",
-      args: ["-y", "@keeperhub/mcp-server"],
-      env: { KEEPERHUB_API_KEY: process.env.KEEPERHUB_API_KEY! }
-    });
-
-    this.mcpClient = new Client({ name: "simoproof-agent", version: "1.0.0" });
-    await this.mcpClient.connect(transport);
-  }
-
-  /**
-   * Submit an EAS attestation via KeeperHub (with retry)
-   */
-  async submitAttestation(params: {
-    schemaUID: string;
-    recipient: string;
-    data: Record<string, unknown>;
-    agentENS: string;
-  }): Promise<string> {
-    const result = await this.mcpClient.callTool({
-      name: "execute_transaction",
-      arguments: {
-        contract: EAS_SEPOLIA_ADDRESS,
-        abi: EAS_ABI,
-        method: "attest",
-        args: [{
-          schema: params.schemaUID,
-          data: {
-            recipient: params.recipient,
-            expirationTime: 0n,
-            revocable: true,
-            data: encodeEASData(params.data),
-          }
-        }],
-        metadata: {
-          purpose: "simoproof-attestation",
-          agentENS: params.agentENS,
-        }
-      }
-    });
-
-    return result.content[0].text; // transaction hash
-  }
-
-  /**
-   * Update ENS text record via KeeperHub (with retry)
-   */
-  async updateENSTextRecord(params: {
-    node: string;
-    key: string;
-    value: string;
-  }): Promise<string> {
-    const result = await this.mcpClient.callTool({
-      name: "execute_transaction",
-      arguments: {
-        contract: ENS_PUBLIC_RESOLVER_SEPOLIA,
-        abi: ENS_RESOLVER_ABI,
-        method: "setText",
-        args: [params.node, params.key, params.value],
-      }
-    });
-    return result.content[0].text;
-  }
-
-  /**
-   * Get execution history for an agent (audit trail)
-   */
-  async getExecutionHistory(agentENS: string): Promise<ExecutionRecord[]> {
-    const result = await this.mcpClient.callTool({
-      name: "get_execution_history",
-      arguments: { tag: agentENS }
-    });
-    return JSON.parse(result.content[0].text);
-  }
-}
-```
-
-### 5.2 x402 Payment Rail (KeeperHub Integration — bonus)
-
-```typescript
-// Optional: agents pay for KeeperHub execution via x402
-// Demonstrates KeeperHub's payment integration capability
-
-async function payForExecution(amount: bigint, agentWallet: WalletClient) {
-  // x402 payment header in HTTP request to KeeperHub
-  // Enables autonomous agent-to-service micropayments
-}
-```
-
----
-
-## 6. EAS Reputation Layer
-
-### 6.1 Attestation Creation (by Carol)
-
-```typescript
-// packages/agent-runtime/src/reputation/eas-client.ts
-
-import { EAS, SchemaEncoder } from "@ethereum-attestation-service/eas-sdk";
-
-export class EASClient {
-  private eas: EAS;
-
-  constructor(signer: ethers.Signer) {
-    this.eas = new EAS(EAS_SEPOLIA_ADDRESS);
-    this.eas.connect(signer);
-  }
-
-  async createAttestation(params: {
-    agentENS: string;
-    taskType: string;
-    outcome: boolean;
-    details: string;
-    verifierENS: string;
-  }): Promise<string> {
-    const schemaEncoder = new SchemaEncoder(
-      "string agentENS,string taskType,bool outcome,string details,string verifierENS,uint256 timestamp"
-    );
-
-    const encodedData = schemaEncoder.encodeData([
-      { name: "agentENS",     type: "string",  value: params.agentENS },
-      { name: "taskType",     type: "string",  value: params.taskType },
-      { name: "outcome",      type: "bool",    value: params.outcome },
-      { name: "details",      type: "string",  value: params.details },
-      { name: "verifierENS",  type: "string",  value: params.verifierENS },
-      { name: "timestamp",    type: "uint256", value: BigInt(Date.now()) },
-    ]);
-
-    // Submit via KeeperHub for reliable execution
-    const txHash = await this.keeperHub.submitAttestation({
-      schemaUID: SIMOPROOF_SCHEMA_UID,
-      recipient: await this.resolveAddress(params.agentENS),
-      data: { encodedData },
-      agentENS: params.verifierENS,
-    });
-
-    return txHash;
-  }
-
-  /**
-   * Get reputation score for an agent
-   */
-  async getReputation(ensName: string): Promise<{
-    total: number;
-    successful: number;
-    score: number;
-    recentAttestations: Attestation[];
-  }> {
-    const address = await this.resolveAddress(ensName);
-
-    // Query EAS GraphQL (easscan.org/graphql on Sepolia)
-    const attestations = await this.queryEAS(address);
-
-    const successful = attestations.filter(a => a.outcome === true).length;
-    const total = attestations.length;
-    const score = total > 0 ? Math.round((successful / total) * 100) : 0;
-
-    return { total, successful, score, recentAttestations: attestations.slice(0, 5) };
-  }
-}
-```
-
----
-
-## 7. SimoProofAgent Class (Core Runtime)
-
-```typescript
-// packages/agent-runtime/src/agent.ts
-
-export class SimoProofAgent {
-  private ensName: string;
-  private ens: ENSClient;
-  private axl: AXLClient;
-  private keeper: KeeperHubClient;
-  private eas: EASClient;
-
-  constructor(config: {
-    ensName: string;       // e.g., "alice.agents.eth"
-    axlPort: number;       // e.g., 9002
-    axlPubkey: string;     // ed25519 pubkey hex
-    capabilities: string[]; // e.g., ["research", "coordinate"]
-    wallet: ethers.Wallet;
-  }) { /* ... */ }
-
-  /**
-   * Bootstrap agent — connect all layers
-   */
-  async initialize() {
-    await this.keeper.connect();
-    const agentId = await this.axl.getPeerID();
-    console.log(`[${this.ensName}] AXL node live. Peer ID: ${agentId}`);
-    console.log(`[${this.ensName}] KeeperHub connected.`);
-    console.log(`[${this.ensName}] Identity: ${await this.ens.resolveAgent(this.ensName)}`);
-  }
-
-  /**
-   * Discover another agent by ENS name and open AXL channel
-   */
-  async connectToAgent(targetENS: string) {
-    const { axlPubkey, capabilities } = await this.ens.resolveAgent(targetENS);
-    console.log(`[${this.ensName}] Resolved ${targetENS} → AXL: ${axlPubkey}`);
-    console.log(`[${this.ensName}] Capabilities: ${capabilities}`);
-    return { axlPubkey, capabilities };
-  }
-
-  /**
-   * Send structured message via AXL
-   */
-  async sendMessage(targetENS: string, type: AXLMessage["type"], payload: unknown) {
-    const { axlPubkey } = await this.connectToAgent(targetENS);
-    await this.axl.send(axlPubkey, {
-      type, from: this.ensName, to: targetENS, payload, timestamp: Date.now()
-    });
-    console.log(`[${this.ensName}] → ${targetENS}: ${type}`);
-  }
-
-  /**
-   * Listen for incoming AXL messages
-   */
-  async listen(handler: (msg: AXLMessage) => Promise<void>) {
-    setInterval(async () => {
-      const messages = await this.axl.receive();
-      for (const msg of messages) {
-        console.log(`[${this.ensName}] ← ${msg.from}: ${msg.type}`);
-        await handler(msg);
-      }
-    }, 1000); // poll every second
-  }
-
-  /**
-   * Attest to another agent's task completion via EAS + KeeperHub
-   */
-  async attest(params: {
-    agentENS: string;
-    taskType: string;
-    outcome: boolean;
-    details: string;
-  }): Promise<string> {
-    console.log(`[${this.ensName}] Attesting ${params.agentENS}: ${params.outcome}`);
-    return this.eas.createAttestation({ ...params, verifierENS: this.ensName });
-  }
-}
-```
-
----
-
-## 8. Frontend Demo App
-
-### 8.1 Component Architecture
+The AXL pubkey is stored in the ENS text record for `node-1.simoproof.eth`:
 
 ```
-frontend/
-├── src/app/
-│   ├── page.tsx              # Main demo page
-│   └── api/
-│       ├── agents/route.ts   # Agent state API
-│       ├── messages/route.ts # AXL message stream (SSE)
-│       └── scenario/route.ts # Trigger demo scenario
-│
-└── src/components/
-    ├── AgentCard.tsx          # Agent identity + reputation card
-    ├── AXLMessageLog.tsx      # Live message flow visualization
-    ├── KeeperHubStatus.tsx    # Transaction execution status
-    ├── EASReputation.tsx      # Reputation score + attestation history
-    └── DemoControls.tsx       # "Run Scenario" button + step indicator
+key: "axl_pubkey"
+value: "ed25519:<64-char hex pubkey>"
 ```
 
-### 8.2 AgentCard Component
+Any agent can:
+1. Resolve `node-1.simoproof.eth` 
+2. Read `axl_pubkey` text record
+3. Connect directly over AXL using that pubkey
+4. No centralized registry or DNS required
 
-```tsx
-// Three panels, side-by-side
+This is the novel contribution: **ENS as the discovery layer for AXL P2P connections.**
 
-interface AgentData {
-  ensName: string;          // "alice.agents.eth"
-  address: string;          // 0x...
-  capabilities: string[];   // ["research", "coordinate"]
-  axlPeerId: string;        // AXL peer ID
-  axlStatus: "idle" | "sending" | "receiving";
-  reputation: {
-    score: number;          // 0-100
-    total: number;
-    successful: number;
-  };
-}
-
-export function AgentCard({ agent }: { agent: AgentData }) {
-  return (
-    <div className="bg-gray-900 border border-gray-700 rounded-xl p-6">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
-          🤖
-        </div>
-        <div>
-          <h3 className="font-mono text-blue-400">{agent.ensName}</h3>
-          <p className="text-xs text-gray-500">{agent.address.slice(0,6)}...{agent.address.slice(-4)}</p>
-        </div>
-        <div className={`ml-auto w-2 h-2 rounded-full ${
-          agent.axlStatus === "idle" ? "bg-green-500" :
-          agent.axlStatus === "sending" ? "bg-yellow-500 animate-pulse" :
-          "bg-blue-500 animate-pulse"
-        }`} />
-      </div>
-
-      {/* Capabilities */}
-      <div className="flex flex-wrap gap-1 mb-4">
-        {agent.capabilities.map(cap => (
-          <span key={cap} className="px-2 py-0.5 bg-gray-800 text-gray-300 text-xs rounded">
-            {cap}
-          </span>
-        ))}
-      </div>
-
-      {/* AXL Identity */}
-      <div className="text-xs text-gray-500 font-mono mb-3">
-        AXL: {agent.axlPeerId.slice(0, 16)}...
-      </div>
-
-      {/* Reputation */}
-      <div className="border-t border-gray-700 pt-3">
-        <div className="flex justify-between text-xs text-gray-400 mb-1">
-          <span>Reputation</span>
-          <span>{agent.reputation.score}% ({agent.reputation.successful}/{agent.reputation.total})</span>
-        </div>
-        <div className="w-full bg-gray-700 rounded-full h-1.5">
-          <div
-            className="bg-green-500 h-1.5 rounded-full transition-all duration-500"
-            style={{ width: `${agent.reputation.score}%` }}
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
-```
-
-### 8.3 Demo Scenario API
-
-```typescript
-// frontend/src/app/api/scenario/route.ts
-// Triggers the full Alice → Bob → Carol pipeline
-
-export async function POST(req: Request) {
-  const { step } = await req.json();
-
-  const alice = new SimoProofAgent({ ensName: "alice.agents.eth", axlPort: 9002, /* ... */ });
-  const bob   = new SimoProofAgent({ ensName: "bob.agents.eth",   axlPort: 9003, /* ... */ });
-  const carol = new SimoProofAgent({ ensName: "carol.agents.eth", axlPort: 9004, /* ... */ });
-
-  // Step 1: Alice resolves Bob via ENS, opens AXL channel
-  if (step === 1) {
-    await alice.initialize();
-    const bobInfo = await alice.connectToAgent("bob.agents.eth");
-    return Response.json({ bobInfo, step: 1, status: "ENS resolved → AXL channel opened" });
-  }
-
-  // Step 2: Alice sends TaskRequest to Bob via AXL
-  if (step === 2) {
-    await alice.sendMessage("bob.agents.eth", "TaskRequest", {
-      task: "execute-trade",
-      condition: "gas < 15 gwei",
-      amount: "0.01 ETH"
-    });
-    return Response.json({ step: 2, status: "TaskRequest sent via AXL" });
-  }
-
-  // ... steps 3-8 continue the scenario
-}
-```
-
----
-
-## 9. Build Plan (14-Day Sprint)
-
-| Day(s) | Task | Owner | Deliverable |
-|--------|------|-------|-------------|
-| **1** | Repo setup, ENS on Sepolia, Go env | Full team | Monorepo + ENS parent name registered |
-| **2** | AXL binary built, 3 nodes running, Docker Compose | Backend | 3 AXL nodes communicating across separate processes |
-| **3** | `AgentsSubnameRegistrar.sol` written + tested | Contracts | Passing Foundry tests |
-| **4** | Deploy registrar to Sepolia, register Alice/Bob/Carol | Contracts | 3 agents registered on Sepolia ENS |
-| **5** | `ENSClient` TypeScript — resolve agents, list agents | Backend | ENS resolution returning real data |
-| **6** | `AXLClient` TypeScript — send/receive messages across nodes | Backend | Cross-node AXL messages working |
-| **7** | `KeeperHubClient` — MCP server connect, submitAttestation | Backend | KeeperHub executing EAS submission |
-| **8** | EAS schema deploy, `EASClient` attestation creation | Backend | Attestation appearing on easscan.org |
-| **9** | `SimoProofAgent` class — full integration test | Backend | Alice → Bob → Carol pipeline end-to-end |
-| **10** | Frontend scaffold, `AgentCard`, `AXLMessageLog` | Frontend | Three panels showing live data |
-| **11** | `KeeperHubStatus`, `EASReputation` components | Frontend | Full demo UI functional |
-| **12** | Demo scenario wiring — "Run Scenario" button | Frontend | One-click full pipeline demo |
-| **13** | Architecture diagram, README, FEEDBACK.md | All | Submission docs complete |
-| **14** | Demo video recording, final tests, submission | All | Submitted to ETHGlobal dashboard |
-
----
-
-## 10. Environment Variables
+### 5.3 AXL Binary
 
 ```bash
-# .env.example — DO NOT commit actual keys
+# Binary location
+/workspace/axl-node
+
+# Start AXL node
+/workspace/axl-node start \
+  --name simoproof-node-1 \
+  --api-port 7001 \
+  --tcp-port 9001
+
+# Pipeline uses HTTP API at localhost:7001
+```
+
+---
+
+## 6. KeeperHub Integration
+
+### 6.1 MCP Server
+
+```typescript
+// packages/keeperhub/src/server.ts
+
+// 6 MCP tools exposed:
+const tools = [
+  'poll_pending_discoveries',   // poll mock-discovery for pending items
+  'run_simocracy_validation',   // run senate on a discovery
+  'generate_zk_proof',          // call RISC Zero prover
+  'submit_onchain_attestation', // call DiscoveryVerifier.submitDiscovery()
+  'update_ens_records',         // update ENSIP-25 text records
+  'verify_claim',               // end-to-end pipeline for a single claim
+];
+```
+
+### 6.2 Workflow Configuration
+
+```typescript
+// packages/keeperhub/src/jobs.ts — creates 5 workflows via KeeperHub API
+
+const workflows = [
+  {
+    name: 'simoproof-poll-discoveries',
+    trigger: { type: 'interval', intervalSeconds: 30 },
+    steps: [{ action: 'mcp_call', tool: 'poll_pending_discoveries' }]
+  },
+  {
+    name: 'simoproof-validate',
+    trigger: { type: 'event', event: 'discovery.pending' },
+    steps: [{ action: 'mcp_call', tool: 'run_simocracy_validation' }],
+    retry: { attempts: 3, backoff: [10, 30, 90] }
+  },
+  {
+    name: 'simoproof-prove',
+    trigger: { type: 'event', event: 'discovery.validated' },
+    steps: [{ action: 'mcp_call', tool: 'generate_zk_proof' }],
+    retry: { attempts: 3, backoff: [60, 180, 600] }
+  },
+  {
+    name: 'simoproof-attest',
+    trigger: { type: 'event', event: 'discovery.proved' },
+    steps: [{ action: 'mcp_call', tool: 'submit_onchain_attestation' }],
+    retry: { attempts: 3, backoff: [30, 90, 300] }
+  },
+  {
+    name: 'simoproof-ens-update',
+    trigger: { type: 'event', event: 'discovery.attested' },
+    steps: [{ action: 'mcp_call', tool: 'update_ens_records' }]
+  }
+];
+```
+
+### 6.3 API Configuration
+
+```bash
+KEEPERHUB_API_KEY=kh_zcBcSoMYrZxO--I7GzR8PNG-2zT_WX7_
+KEEPERHUB_BASE_URL=https://app.keeperhub.com    # NOTE: no /api suffix
+```
+
+> ⚠️ **Base URL gotcha:** The KeeperHub API base URL is `https://app.keeperhub.com` — **without** `/api` suffix. Using `/api` causes 404s.
+
+---
+
+## 7. 0G Storage Integration
+
+```typescript
+// packages/zero-g/src/storage.ts
+
+interface StorageResult {
+  cid: string;          // content ID
+  txHash: string;       // 0G upload transaction
+  network: 'testnet';
+}
+
+async function uploadToZeroG(
+  data: Buffer,
+  rpcUrl: string       // https://evmrpc-testnet.0g.ai
+): Promise<StorageResult>
+```
+
+**Configuration:**
+```bash
+ZERO_G_RPC_URL=https://evmrpc-testnet.0g.ai
+```
+
+---
+
+## 8. ENS / ENSIP-25 Integration
+
+### 8.1 Text Records Written Per Discovery
+
+```typescript
+// packages/ens/src/ens-updater.ts
+
+const ENSIP25_RECORDS = {
+  ens_name:        'node-1.simoproof.eth',
+  capabilities:    '["verify","attest","store"]',
+  axl_pubkey:      '<ed25519 pubkey hex>',
+  discoveries_count: String(currentCount + 1),
+  latest_eas_uid:  easAttestationUID,
+};
+
+// Update via ethers.js + Sepolia PublicResolver
+await resolver.setText(nameHash, key, value);
+```
+
+### 8.2 Live ENS State
+
+```
+node-1.simoproof.eth (Sepolia)
+├── ens_name          = "node-1.simoproof.eth"
+├── capabilities      = ["verify","attest","store"]
+├── axl_pubkey        = "ed25519:..."
+├── discoveries_count = "10"
+└── latest_eas_uid    = "0xd47257..."
+```
+
+**ENSIP-25 reference:** https://docs.ens.domains/building-with-ai/
+
+---
+
+## 9. Frontend Demo (simoproof.org)
+
+### 9.1 Design System
+
+**Aesthetic:** "Scientific Tribunal" — the opposite of generic web3 purple gradients.
+
+| Variable | Value |
+|----------|-------|
+| `--bg` | `#090d08` (dark forest green) |
+| `--lime` | `#aaff00` (acid chartreuse) |
+| `--coral` | `#ff4040` (verdict red) |
+| Headline font | `DM Serif Display` |
+| Data/code font | `JetBrains Mono` |
+| UI font | `Outfit` |
+| Background | Graph-paper grid (40px, lime at 3% opacity) |
+| Overlay | SVG grain filter (feTurbulence, 0.35 opacity) |
+
+### 9.2 Senate Cards (3D Flip)
+
+```css
+.flip-wrap { perspective: 800px; height: 168px; }
+.flip-inner {
+  transform-style: preserve-3d;
+  transition: transform .55s cubic-bezier(.42,0,.17,1.2);
+}
+.flip-inner.flipped { transform: rotateY(180deg); }
+.flip-face { backface-visibility: hidden; }
+.flip-back { transform: rotateY(180deg); }
+```
+
+### 9.3 Preset Claims with Real EAS UIDs
+
+Each preset claim in the frontend maps to a confirmed on-chain attestation:
+
+```javascript
+const PRESETS = [
+  {
+    claim: 'Arctic sea ice minimum extent in September 2023...',
+    easUid: '0xd47257e63d2b5df37b78e33e00151cc63b33499c63c5fdbbe7b5317c167a7c64',
+    source: 'NSIDC Sea Ice Index v3.0',
+    confidence: 0.97
+  },
+  // ... 4 more presets
+];
+```
+
+When a judge clicks "View EAS →", they land on the actual live attestation at:
+`https://base-sepolia.easscan.org/attestation/view/{real_uid}`
+
+### 9.4 Custom Claim Mode
+
+Users can enter any custom claim. For custom claims:
+- Senate simulation runs with pre-programmed deliberation timing (~3-4s per senator)
+- EAS link goes to schema view (since no real attestation exists)
+- Full pipeline animation plays with all 7 steps
+
+### 9.5 Deployment
+
+**Cloudflare Pages** — static deploy from `packages/web/dist/`:
+```bash
+cd packages/web && npm run build
+wrangler pages deploy dist/ --project-name simoproof --branch main
+```
+
+---
+
+## 10. Pipeline Runner
+
+```typescript
+// scripts/demo.ts — main pipeline orchestrator
+
+// Run all 5 discoveries
+RISC0_DEV_MODE=true npx tsx scripts/demo.ts --all
+
+// Run single discovery
+RISC0_DEV_MODE=true npx tsx scripts/demo.ts --discovery disc-001
+
+// Skip onchain txs (fastest — for demos)
+RISC0_DEV_MODE=true npx tsx scripts/demo.ts --all --skip-onchain
+```
+
+**Pipeline timing (RISC0_DEV_MODE=true):**
+- Single discovery: ~10s
+- All 5 discoveries: ~50s
+
+**Pipeline timing (production mode):**
+- Single discovery: ~3-5 min (Groth16 proof generation)
+- All 5 discoveries: ~15-25 min
+
+---
+
+## 11. Environment Variables
+
+```bash
+# .env.example — see .env for real values (not committed)
 
 # Ethereum
-SEPOLIA_RPC_URL=https://sepolia.infura.io/v3/<key>
-PRIVATE_KEY_ALICE=0x...
-PRIVATE_KEY_BOB=0x...
-PRIVATE_KEY_CAROL=0x...
+PRIVATE_KEY=0x...
+SEPOLIA_RPC=https://ethereum-sepolia-rpc.publicnode.com
+BASE_SEPOLIA_RPC=https://base-sepolia-rpc.publicnode.com
+
+# Contracts (Base Sepolia)
+DISCOVERY_VERIFIER_ADDRESS=0x5508C6aC4E85C3458bfceaD1DBcE1F66bf78c1E6
+DISCOVERY_SCHEMA_UID=0x86704ade90c66f1fc5071d0a00e8d0c5055f4c5048d8ae2d7866cf55b3a319a2
+RISC0_VERIFIER_ADDRESS=0x0b144e07a0826182b6b59788c34b32bfa86fb711
+GUEST_IMAGE_ID=0x4220fefa6dab2f88ffeeeb5048ae2df22385f2e00cfd5c12b1ab33e00b718ba2
+
+# ENS (Sepolia)
+ENS_SUBNAME=node-1.simoproof.eth
+
+# RISC Zero
+RISC0_DEV_MODE=true  # set to false for real Groth16 proofs
+
+# LLM (ASI:One — senate)
+OPENAI_API_KEY=<ASI:One key>
+LLM_BASE_URL=https://api.asi1.ai/v1
+LLM_MODEL=asi1
 
 # KeeperHub
-KEEPERHUB_API_KEY=<from app.keeperhub.com>
+KEEPERHUB_API_KEY=<keeperhub key>
+KEEPERHUB_BASE_URL=https://app.keeperhub.com    # no /api suffix!
 
-# Contract addresses (populated after deployment)
-REGISTRAR_CONTRACT_ADDRESS=0x...
-EAS_SCHEMA_UID=0x...
-ENS_PARENT_NODE=0x...  # namehash("agents.eth")
+# Gensyn AXL
+AXL_BINARY_PATH=/workspace/axl-node
 
-# AXL
-AXL_ALICE_PORT=9002
-AXL_BOB_PORT=9003
-AXL_CAROL_PORT=9004
+# 0G Storage
+ZERO_G_RPC_URL=https://evmrpc-testnet.0g.ai
 ```
 
 ---
 
-## 11. Submission Checklist
+## 12. Submission Checklist
 
-**ETHGlobal Hacker Dashboard submission — verify all before submitting:**
-
-### Hard Requirements (failure = disqualification)
-- [ ] **FEEDBACK.md exists at repo root** (KeeperHub feedback bounty)
-- [ ] AXL demo uses **separate nodes** — verify with `docker ps` showing 3 containers
-- [ ] ENS demo has **no hard-coded values** — all resolution is live on Sepolia
-- [ ] KeeperHub integration uses **MCP server** (not raw API bypass)
-- [ ] Only **3 partner prizes selected**: ENS + KeeperHub + Gensyn AXL
-- [ ] Demo video is **≤ 3 minutes**
+### Hard Requirements ✅
+- [x] **FEEDBACK.md exists at repo root** (KeeperHub feedback bounty)
+- [x] AXL integration — broadcast in pipeline step 1
+- [x] ENS demo has no hard-coded values — all resolution is live on Sepolia
+- [x] KeeperHub integration uses MCP server (`packages/keeperhub/`)
+- [x] Only 3 partner prizes selected: ENS + KeeperHub + Gensyn AXL
+- [ ] Demo video is ≤ 3 minutes ← record this morning
 
 ### Required Submission Fields
-- [ ] Project title: "SimoProof"
-- [ ] Short description (≤ 280 chars): *"Verified agent identity network: ENS names for AI agents, AXL for encrypted P2P comms, KeeperHub for reliable onchain execution, EAS for on-chain reputation. Who is that agent? Now you can know."*
-- [ ] GitHub repo URL (public)
-- [ ] Demo video URL (Loom or YouTube, unlisted OK)
-- [ ] Live demo URL (Vercel frontend + Sepolia contracts)
-- [ ] Contract deployment addresses (registrar + EAS schema UID)
-- [ ] Team member names + Ethereum addresses
-
-### Partner Track Explanations (write these in submission form)
-**ENS:** *"ENS is the identity backbone. Each agent owns a .agents.eth subname. ENSIP-25 text records store agent capabilities and AXL pubkey. Agents discover each other by resolving ENS names. No ENS = no identity, no discovery, no network."*
-
-**KeeperHub:** *"All onchain operations — EAS attestation submissions and ENS text record updates — route through KeeperHub's MCP server for guaranteed execution with retry logic. We also demonstrate a failure-then-recovery scenario in the demo. Honest DX feedback in FEEDBACK.md."*
-
-**Gensyn AXL:** *"Each agent runs a separate AXL node (3 separate processes, 3 ed25519 keypairs). Agents communicate exclusively via AXL — task delegation, verification requests, attestation proposals. AXL pubkeys stored in ENS text records = the ENS-anchored AXL discovery primitive."*
-
-### Documentation
-- [ ] README.md covers: what it does, architecture diagram, setup (5 steps to run), demo scenario walkthrough
-- [ ] Code is commented at non-obvious points
-- [ ] FEEDBACK.md covers KeeperHub DX: what worked, what didn't, what's missing
-- [ ] `.env.example` present, actual keys not committed
-
----
-
-## 12. FEEDBACK.md Template
-
-```markdown
-# KeeperHub Integration Feedback — SimoProof
-
-## What We Built
-Used KeeperHub's MCP server to handle all onchain operations for SimoProof agents:
-EAS attestation submissions and ENS text record updates with retry guarantees.
-
-## What Worked Well
-- [Fill in during build]
-
-## Friction Points
-- [Fill in during build — be specific, e.g., "MCP server startup took 8s, no progress indicator"]
-
-## Bugs Encountered
-- [Fill in with steps to reproduce]
-
-## Documentation Gaps
-- [Fill in — where did you get stuck that docs didn't answer?]
-
-## Feature Requests
-- [Fill in — what would have made this 10x easier?]
-
-## Integration Time
-Setup: Xh | First working call: Xh | Full integration: Xh
-```
-
-> Fill this in honestly during the build. Judges reward real developer insight.
+- [ ] Project title: **SimoProof**
+- [ ] Short description: *"7-step verified discovery network: empirical claims deliberated by a 4-agent Simocracy senate, proven with RISC Zero ZK receipts, attested on Base via EAS, stored on 0G, and anchored to ENS identity via ENSIP-25. Who verified that claim? Now you can know — on-chain."*
+- [ ] GitHub: https://github.com/web3guru888/simoproof
+- [ ] Demo video URL
+- [ ] Live demo: https://simoproof.org
+- [ ] Contract addresses: DiscoveryVerifier `0x5508C6...` + EAS Schema `0x86704a...`
+- [ ] Select 3 tracks: ENS + KeeperHub + Gensyn
 
 ---
 
 ## 13. Verifiable References
-
-All external dependencies verified as of 2026-04-30:
 
 | Resource | URL | Status |
 |----------|-----|--------|
@@ -987,11 +667,12 @@ All external dependencies verified as of 2026-04-30:
 | ENS Prize Track | https://ethglobal.com/events/openagents/prizes | ✅ Live |
 | KeeperHub Prize | https://keeperhub.com/blog/008-first-hackathon-openagents | ✅ Live |
 | Gensyn AXL Docs | https://docs.gensyn.ai/tech/agent-exchange-layer | ✅ Live |
-| Gensyn AXL GitHub | https://github.com/gensyn-ai/axl | ✅ Live |
 | ENSIP-25 | https://docs.ens.domains/building-with-ai/ | ✅ Live |
-| ERC-8004 | https://eips.ethereum.org/EIPS/eip-8004 | ✅ Live |
-| EAS (Sepolia) | https://easscan.org (Sepolia explorer) | ✅ Live |
-| KeeperHub MCP Docs | https://docs.keeperhub.com/ai-tools | ✅ Live |
+| EAS (Base Sepolia) | https://base-sepolia.easscan.org | ✅ Live |
+| RISC Zero | https://dev.risczero.com | ✅ Live |
+| 0G Storage | https://docs.0g.ai | ✅ Live |
+| ASI:One API | https://api.asi1.ai/v1 | ✅ Live |
+| KeeperHub API | https://app.keeperhub.com | ✅ Live |
 | EAS SDK | https://docs.attest.org/ | ✅ Live |
 | ENS SDK (viem) | https://docs.ens.domains/ | ✅ Live |
 
