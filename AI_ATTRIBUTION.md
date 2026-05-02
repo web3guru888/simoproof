@@ -69,14 +69,21 @@ All planning artifacts are included in the `docs/` directory.
 
 ## Human Contribution Summary
 
-The human contributor is the sole team member. Their contributions include:
+This project was built by a 2-person human team: **Shaka** and **Robin Dey** (@web3guru888).
 
-- Original concept: applying Simocracy/senate-style multi-agent consensus to scientific discovery verification
-- Prize track strategy: targeting Gensyn + ENS + KeeperHub simultaneously as a unified pipeline
-- Domain expertise: Web3 identity (ENS/ENSIP-25), ZK proofs (RISC Zero), agent frameworks, EAS
-- Directing AI: writing prompts, reviewing outputs, testing locally, making go/no-go decisions at each step
-- Real credentials: ASI:One API key (Fetch.ai), KeeperHub API key, GitHub account, funded ETH wallet
-- Design decisions: "Scientific Tribunal" aesthetic for simoproof.org, senate senator personas, 12-phase Rodin architecture framing
+### Shaka
+- Original concept and vision: the SimoProof idea, Simocracy senate architecture, 12-phase Rodin-inspired framing
+- Research direction: source document analysis, hypothesis selection, primary source verification
+- Prize track strategy: identifying ENS + KeeperHub + Gensyn AXL as a unified pipeline opportunity
+- Narrative: project description, hackathon submission copy, demo scenario design
+- Architectural decisions: ASI:One as the LLM backend, 4-senator deliberation model, "Scientific Tribunal" aesthetic
+
+### Robin Dey (@web3guru888)
+- Technical implementation direction: directing Claude at each build stage, reviewing all code outputs
+- Integration choices: ENSIP-25 text record schema, KeeperHub MCP patterns, RISC Zero dev-mode config
+- Testing and QA: running all pipeline tests locally, verifying on-chain outputs, directing fixes
+- Real credentials: ASI:One API key (Fetch.ai Innovation Lab), KeeperHub API key, GitHub account, funded ETH wallet (`0xB05741aF6f90666Ce27372001CEfC36Cab9bE580`)
+- Deployment: contract deployment to Base Sepolia, ENS registration on Sepolia, Cloudflare Pages setup
 
 ---
 
