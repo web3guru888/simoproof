@@ -1,0 +1,47 @@
+name: SimoProof CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  typescript:
+    name: TypeScript & Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - run: npm ci
+      - run: npx tsc --noEmit -p packages/types/tsconfig.json
+      - run: npx tsc --noEmit -p packages/mock-discovery/tsconfig.json
+      - name: Run mock-discovery smoke test
+        run: RISC0_DEV_MODE=true npx tsx packages/mock-discovery/src/index.ts
+
+  contracts:
+    name: Foundry Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: foundry-rs/foundry-toolchain@v1
+      - name: Install forge-std
+        run: cd contracts && forge install foundry-rs/forge-std --no-git
+      - run: cd contracts && forge build
+      - run: cd contracts && forge test -vv
+
+  rust-check:
+    name: Rust Check (no compile)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: Check syntax (skip risc0 build)
+        run: RISC0_SKIP_BUILD=1 cargo check -p simoproof-prover
+        env:
+          CARGO_HOME: ~/.cargo
