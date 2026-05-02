@@ -1,0 +1,11 @@
+{
+  "name": "@simoproof/web",
+  "version": "1.0.0",
+  "description": "SimoProof live dashboard — deploy via Cloudflare Pages",
+  "scripts": {
+    "deploy": "wrangler pages deploy public/ --project-name simoproof --branch main"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

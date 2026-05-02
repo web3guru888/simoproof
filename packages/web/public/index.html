@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SimoProof — Verified Discovery Network</title>
+  <meta name="description" content="ZK-provable, ENS-native, decentralised protocol for verifying empirical claims. Every discovery generates an on-chain EAS attestation backed by a RISC Zero ZK proof." />
+  <style>
+    :root {
+      --bg:       #0a0c10;
+      --surface:  #111418;
+      --border:   #1e2530;
+      --accent:   #3b82f6;
+      --accent2:  #8b5cf6;
+      --green:    #22c55e;
+      --yellow:   #eab308;
+      --red:      #ef4444;
+      --text:     #e2e8f0;
+      --muted:    #64748b;
+      --mono:     'JetBrains Mono', 'Fira Code', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Header ── */
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+      position: sticky;
+      top: 0;
+      background: rgba(10,12,16,0.95);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    .logo-icon {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+
+    .header-links {
+      display: flex; gap: 20px; align-items: center;
+    }
+
+    .header-links a {
+      color: var(--muted);
+      font-size: 13px;
+      transition: color 0.15s;
+    }
+    .header-links a:hover { color: var(--text); text-decoration: none; }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: rgba(59,130,246,0.12);
+      border: 1px solid rgba(59,130,246,0.3);
+      color: var(--accent);
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      text-align: center;
+      padding: 64px 24px 48px;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(139,92,246,0.1);
+      border: 1px solid rgba(139,92,246,0.25);
+      color: #a78bfa;
+      padding: 4px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: clamp(28px, 5vw, 44px);
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1.15;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #e2e8f0 0%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.7;
+      max-width: 560px;
+      margin: 0 auto 32px;
+    }
+
+    .hero-cta {
+      display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+    }
+    .btn-primary:hover { background: #2563eb; text-decoration: none; }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+
+    /* ── Stats bar ── */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 40px;
+    }
+
+    .stat {
+      background: var(--surface);
+      padding: 20px 24px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      color: var(--text);
+      font-family: var(--mono);
+    }
+
+    .stat-value.loading { color: var(--muted); font-size: 18px; }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: 4px;
+    }
+
+    /* ── Main layout ── */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    .section-header {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .section-sub {
+      font-size: 13px;
+      color: var(--muted);
+      margin-left: auto;
+    }
+
+    .divider { width: 1px; height: 16px; background: var(--border); }
+
+    /* ── Pipeline steps ── */
+    .pipeline {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      overflow-x: auto;
+      padding: 20px 0;
+      margin-bottom: 40px;
+    }
+
+    .pipeline-step {
+      flex: 1;
+      min-width: 110px;
+      text-align: center;
+      position: relative;
+    }
+
+    .pipeline-step::after {
+      content: '';
+      position: absolute;
+      right: -1px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 24px;
+      height: 2px;
+      background: var(--border);
+    }
+    .pipeline-step:last-child::after { display: none; }
+
+    .step-icon {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      margin: 0 auto 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .step-name { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .step-tech { font-size: 12px; color: var(--accent); margin-top: 2px; }
+
+    /* ── Discoveries grid ── */
+    .discoveries-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+
+    .discovery-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      transition: border-color 0.15s;
+    }
+    .discovery-card:hover { border-color: rgba(59,130,246,0.4); }
+
+    .card-header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .card-id {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      background: rgba(255,255,255,0.04);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .conf-pill {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .conf-high { background: rgba(34,197,94,0.12); color: var(--green); }
+    .conf-mid  { background: rgba(234,179,8,0.12);  color: var(--yellow); }
+
+    .card-claim {
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.55;
+      margin-bottom: 14px;
+      font-weight: 500;
+    }
+
+    .senate-votes {
+      display: flex; gap: 6px; flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .vote-chip {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .vote-endorse { background: rgba(34,197,94,0.1);  color: var(--green); border: 1px solid rgba(34,197,94,0.2); }
+    .vote-reject  { background: rgba(239,68,68,0.1);  color: var(--red);   border: 1px solid rgba(239,68,68,0.2); }
+
+    .card-footer {
+      display: flex; align-items: center; gap: 8px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    .eas-link {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .eas-link.live { color: var(--green); }
+    .eas-link.pending { color: var(--muted); font-style: italic; }
+
+    .status-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dot-live    { background: var(--green); box-shadow: 0 0 6px var(--green); }
+    .dot-pending { background: var(--muted); }
+
+    /* ── Attestations table ── */
+    .attestations-section { margin-bottom: 48px; }
+
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      text-align: left;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--muted);
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+      font-weight: 600;
+    }
+    td {
+      padding: 12px 16px;
+      font-size: 13px;
+      border-bottom: 1px solid rgba(30,37,48,0.6);
+      vertical-align: middle;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .mono { font-family: var(--mono); font-size: 12px; }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--muted);
+    }
+    .empty-state .icon { font-size: 32px; margin-bottom: 12px; }
+
+    /* ── ENS + tech cards ── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 48px; }
+    @media (max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
+
+    .info-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .info-card h3 {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .kv-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(30,37,48,0.6);
+      font-size: 12px;
+    }
+    .kv-row:last-child { border-bottom: none; }
+    .kv-key { color: var(--muted); font-family: var(--mono); }
+    .kv-val { color: var(--text); font-family: var(--mono); text-align: right; max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .kv-val.green { color: var(--green); }
+    .kv-val.accent { color: var(--accent); }
+
+    /* ── Stack section ── */
+    .stack-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 48px;
+    }
+
+    .stack-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      display: flex; align-items: center; gap: 12px;
+    }
+
+    .stack-icon {
+      font-size: 24px;
+      width: 40px; height: 40px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.04);
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+
+    .stack-name { font-size: 13px; font-weight: 700; }
+    .stack-role { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .stack-prize { font-size: 10px; color: #fbbf24; font-weight: 700; margin-top: 4px; }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 24px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    footer a { color: var(--muted); }
+    footer a:hover { color: var(--text); }
+
+    /* ── Pulse animation for live dot ── */
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .dot-live { animation: pulse 2s infinite; }
+
+    /* ── Loading spinner ── */
+    .spinner {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">🔬</div>
+    SimoProof
+  </div>
+  <div class="header-links">
+    <a href="https://github.com/web3guru888/simoproof" target="_blank">GitHub</a>
+    <a href="https://base-sepolia.easscan.org/schema/view/0x86704ade90c66f1fc5071d0a00e8d0c5055f4c5048d8ae2d7866cf55b3a319a2" target="_blank">EAS Schema</a>
+    <a href="https://ethglobal.com/events/open-agents" target="_blank">
+      <span class="badge">🏆 ETHGlobal Open Agents</span>
+    </a>
+  </div>
+</header>
+
+<!-- ── Hero ── -->
+<div class="hero">
+  <div class="hero-tag">⚡ Live on Base Sepolia Testnet</div>
+  <h1>Verified Discovery<br/>Network</h1>
+  <p class="hero-sub">
+    Every empirical claim is voted on by a 4-agent AI senate, proven with a RISC Zero ZK proof,
+    and permanently attested on-chain via EAS — anchored to an ENS identity.
+  </p>
+  <div class="hero-cta">
+    <a class="btn btn-primary" href="https://base-sepolia.easscan.org/schema/view/0x86704ade90c66f1fc5071d0a00e8d0c5055f4c5048d8ae2d7866cf55b3a319a2" target="_blank">
+      🔗 View Attestations
+    </a>
+    <a class="btn btn-outline" href="https://github.com/web3guru888/simoproof" target="_blank">
+      ⭐ GitHub Repo
+    </a>
+  </div>
+</div>
+
+<!-- ── Stats bar ── -->
+<div class="stats-bar">
+  <div class="stat">
+    <div class="stat-value" id="stat-attestations"><span class="spinner"></span></div>
+    <div class="stat-label">EAS Attestations</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value" id="stat-discoveries">5</div>
+    <div class="stat-label">Discovery Fixtures</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value" id="stat-ens"><span class="spinner"></span></div>
+    <div class="stat-label">ENS discoveries_count</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value">4</div>
+    <div class="stat-label">Senate Sims (ASI:One)</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value">5</div>
+    <div class="stat-label">KeeperHub Workflows</div>
+  </div>
+</div>
+
+<!-- ── Main ── -->
+<main>
+
+  <!-- Pipeline diagram -->
+  <div class="section-header">
+    <div class="section-title">7-Step Pipeline</div>
+  </div>
+  <div class="pipeline">
+    <div class="pipeline-step">
+      <div class="step-icon">📡</div>
+      <div class="step-name">Discovery</div>
+      <div class="step-tech">World Bank / IPCC</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="step-icon">🌐</div>
+      <div class="step-name">AXL</div>
+      <div class="step-tech">Gensyn P2P</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="step-icon">🗳️</div>
+      <div class="step-name">Senate</div>
+      <div class="step-tech">ASI:One 4-Sim</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="step-icon">🔐</div>
+      <div class="step-name">ZK Proof</div>
+      <div class="step-tech">RISC Zero</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="step-icon">🗄️</div>
+      <div class="step-name">Storage</div>
+      <div class="step-tech">0G Network</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="step-icon">✅</div>
+      <div class="step-name">Attest</div>
+      <div class="step-tech">EAS on Base</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="step-icon">🏷️</div>
+      <div class="step-name">ENS Update</div>
+      <div class="step-tech">ENSIP-25</div>
+    </div>
+  </div>
+
+  <!-- Discovery cards -->
+  <div class="section-header">
+    <div class="section-title">Discovery Fixtures</div>
+    <div class="section-sub">Empirical claims from World Bank, IPCC, NOAA, WHO</div>
+  </div>
+  <div class="discoveries-grid" id="discoveries-grid">
+    <!-- Populated by JS -->
+  </div>
+
+  <!-- Live attestations table -->
+  <div class="attestations-section">
+    <div class="section-header">
+      <div class="section-title">Live EAS Attestations</div>
+      <span class="divider"></span>
+      <div class="section-sub" id="attest-count">Loading…</div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>EAS UID</th>
+            <th>Claim</th>
+            <th>Confidence</th>
+            <th>Time</th>
+            <th>Tx</th>
+          </tr>
+        </thead>
+        <tbody id="attestations-body">
+          <tr><td colspan="5">
+            <div class="empty-state">
+              <div class="icon"><span class="spinner"></span></div>
+              <div>Loading attestations from EAS…</div>
+            </div>
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ENS + Contract info -->
+  <div class="two-col">
+    <div class="info-card">
+      <h3>🏷️ ENS Identity — node-1.simoproof.eth</h3>
+      <div class="kv-row">
+        <span class="kv-key">agent_type</span>
+        <span class="kv-val green">simoproof-discovery-node</span>
+      </div>
+      <div class="kv-row">
+        <span class="kv-key">protocol_version</span>
+        <span class="kv-val accent">3.0</span>
+      </div>
+      <div class="kv-row">
+        <span class="kv-key">discoveries_count</span>
+        <span class="kv-val" id="ens-discoveries-count"><span class="spinner"></span></span>
+      </div>
+      <div class="kv-row">
+        <span class="kv-key">latest_eas_uid</span>
+        <span class="kv-val accent" id="ens-latest-eas" style="font-size:10px">Loading…</span>
+      </div>
+      <div class="kv-row">
+        <span class="kv-key">capabilities</span>
+        <span class="kv-val" style="font-size:10px">zk-proof,eas-attest,senate-vote</span>
+      </div>
+    </div>
+
+    <div class="info-card">
+      <h3>📜 Deployed Contracts</h3>
+      <div class="kv-row">
+        <span class="kv-key">DiscoveryVerifier</span>
+        <a class="kv-val accent" href="https://sepolia.basescan.org/address/0x902e138Be827c6AE8504Cfd2E54caeb2910690Dc" target="_blank" style="font-size:10px">0x902e138…Dc</a>
+      </div>
+      <div class="kv-row">
+        <span class="kv-key">EAS Schema</span>
+        <a class="kv-val accent" href="https://base-sepolia.easscan.org/schema/view/0x86704ade90c66f1fc5071d0a00e8d0c5055f4c5048d8ae2d7866cf55b3a319a2" target="_blank" style="font-size:10px">0x86704a…a2</a>
+      </div>
+      <div class="kv-row">
+        <span class="kv-key">Network</span>
+        <span class="kv-val green">Base Sepolia (84532)</span>
+      </div>
+      <div class="kv-row">
+        <span class="kv-key">ENS Registry</span>
+        <span class="kv-val green">Sepolia</span>
+      </div>
+      <div class="kv-row">
+        <span class="kv-key">ZK Prover</span>
+        <span class="kv-val accent">RISC Zero v3 (dev mode)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tech stack -->
+  <div class="section-header">
+    <div class="section-title">Prize Tracks & Tech Stack</div>
+    <div class="section-sub">ETHGlobal Open Agents 2026</div>
+  </div>
+  <div class="stack-grid">
+    <div class="stack-card">
+      <div class="stack-icon">🏷️</div>
+      <div>
+        <div class="stack-name">ENS</div>
+        <div class="stack-role">ENSIP-25 agent identity</div>
+        <div class="stack-prize">🏆 Best AI Agent Integration · $5k</div>
+      </div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-icon">🌐</div>
+      <div>
+        <div class="stack-name">Gensyn AXL</div>
+        <div class="stack-role">P2P pre-validation</div>
+        <div class="stack-prize">🏆 Best AXL Application · $5k</div>
+      </div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-icon">⚙️</div>
+      <div>
+        <div class="stack-name">KeeperHub</div>
+        <div class="stack-role">5-stage automation</div>
+        <div class="stack-prize">🏆 Best Use of KeeperHub · $5k</div>
+      </div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-icon">🤖</div>
+      <div>
+        <div class="stack-name">ASI:One</div>
+        <div class="stack-role">4-Sim senate LLM</div>
+        <div class="stack-role">asi1 model via OpenAI API</div>
+      </div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-icon">🔐</div>
+      <div>
+        <div class="stack-name">RISC Zero</div>
+        <div class="stack-role">ZK proof generation</div>
+        <div class="stack-role">EVM-verified on Base</div>
+      </div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-icon">✅</div>
+      <div>
+        <div class="stack-name">EAS</div>
+        <div class="stack-role">On-chain attestations</div>
+        <div class="stack-role">Permanent · Non-revocable</div>
+      </div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-icon">🗄️</div>
+      <div>
+        <div class="stack-name">0G Network</div>
+        <div class="stack-role">Decentralised storage</div>
+        <div class="stack-role">ZK-private source data</div>
+      </div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-icon">🦀</div>
+      <div>
+        <div class="stack-name">Rust + TypeScript</div>
+        <div class="stack-role">Monorepo · npm workspaces</div>
+        <div class="stack-role">Foundry · viem · ethers</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ── Footer ── -->
+<footer>
+  <span>SimoProof v3 · ETHGlobal Open Agents 2026</span>
+  <a href="https://github.com/web3guru888/simoproof" target="_blank">GitHub</a>
+  <a href="https://base-sepolia.easscan.org/schema/view/0x86704ade90c66f1fc5071d0a00e8d0c5055f4c5048d8ae2d7866cf55b3a319a2" target="_blank">EAS Schema</a>
+  <a href="https://sepolia.app.ens.domains/name/node-1.simoproof.eth" target="_blank">ENS</a>
+  <a href="https://sepolia.basescan.org/address/0x902e138Be827c6AE8504Cfd2E54caeb2910690Dc" target="_blank">Contract</a>
+  <span style="color:#444">Apache 2.0 · CC BY 4.0</span>
+</footer>
+
+<script>
+// ── Constants ──
+const SCHEMA_UID   = '0x86704ade90c66f1fc5071d0a00e8d0c5055f4c5048d8ae2d7866cf55b3a319a2';
+const EAS_GQL      = 'https://base-sepolia.easscan.org/graphql';
+const SEPOLIA_RPC  = 'https://ethereum-sepolia-rpc.publicnode.com';
+const ENS_RESOLVER = '0xE99638b40E4Fff0129D56f03b55b6bbC4BBE49b5'; // Sepolia Public Resolver
+const ENS_NAME     = 'node-1.simoproof.eth';
+
+// Discoveries data (static — mirrors fixtures/discoveries.json)
+const DISCOVERIES = [
+  {
+    id:         'disc-001',
+    claim:      'Thailand per-capita CO₂ emissions exceeded 4.0 tonnes in 2022, driven by industrial activity.',
+    confidence: 0.91,
+    source:     'World Bank API',
+    causal:     'industrial_activity → co2_per_capita (0.91)',
+    votes:      { 'bayesian':    'ENDORSE', 'domain':    'REJECT', 'causal':    'REJECT', 'replication': 'ENDORSE' },
+    easUid:     '0x2443c5c7e9cf66f30ea071a6707b7dbfc45f4ce8d006ea1800732eba6413f7f4',
+  },
+  {
+    id:         'disc-002',
+    claim:      'Global average surface temperature anomaly reached +1.45°C above pre-industrial baseline in 2023.',
+    confidence: 0.97,
+    source:     'NASA GISS / NOAA',
+    causal:     'ghg_concentration → radiative_forcing → temperature_anomaly (0.97)',
+    votes:      { 'bayesian':    'ENDORSE', 'domain':    'ENDORSE', 'causal':    'ENDORSE', 'replication': 'ENDORSE' },
+    easUid:     null,
+  },
+  {
+    id:         'disc-003',
+    claim:      'PM2.5 concentrations above 100 µg/m³ correlate with a 23% increase in respiratory hospital admissions.',
+    confidence: 0.87,
+    source:     'WHO Global Air Quality DB',
+    causal:     'pm25_concentration → airway_inflammation → hospital_admissions (0.87)',
+    votes:      { 'bayesian':    'ENDORSE', 'domain':    'ENDORSE', 'causal':    'ENDORSE', 'replication': 'ENDORSE' },
+    easUid:     null,
+  },
+  {
+    id:         'disc-004',
+    claim:      'Global mean atmospheric CO₂ reached 421.08 ppm in 2023, up from 417.06 ppm in 2022.',
+    confidence: 0.99,
+    source:     'NOAA Global Monitoring Laboratory',
+    causal:     'fossil_fuel_combustion → atmospheric_co2_concentration (0.99)',
+    votes:      { 'bayesian':    'ENDORSE', 'domain':    'ENDORSE', 'causal':    'REJECT', 'replication': 'ENDORSE' },
+    easUid:     null,
+  },
+  {
+    id:         'disc-005',
+    claim:      'Brazil\'s forest area declined to 55.1% of total land area in 2022, down from 58.5% in 2016.',
+    confidence: 0.89,
+    source:     'World Bank / FAO',
+    causal:     'land_use_change → forest_cover_loss → carbon_release (0.89)',
+    votes:      { 'bayesian':    'ENDORSE', 'domain':    'REJECT', 'causal':    'REJECT', 'replication': 'ENDORSE' },
+    easUid:     null,
+  },
+];
+
+// ── Render discovery cards ──
+function renderDiscoveries() {
+  const grid = document.getElementById('discoveries-grid');
+  grid.innerHTML = DISCOVERIES.map(d => {
+    const confClass = d.confidence >= 0.95 ? 'conf-high' : d.confidence >= 0.85 ? 'conf-high' : 'conf-mid';
+    const voteChips = Object.entries(d.votes).map(([sim, v]) =>
+      `<span class="vote-chip ${v === 'ENDORSE' ? 'vote-endorse' : 'vote-reject'}">${sim[0].toUpperCase()}: ${v}</span>`
+    ).join('');
+
+    const hasEas = !!d.easUid;
+    const easShort = hasEas ? d.easUid.slice(0, 10) + '…' + d.easUid.slice(-6) : 'Pending';
+
+    return `<div class="discovery-card">
+      <div class="card-header">
+        <span class="card-id">${d.id}</span>
+        <span class="conf-pill ${confClass}">${(d.confidence * 100).toFixed(0)}%</span>
+      </div>
+      <div class="card-claim">${d.claim}</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">📡 ${d.source}</div>
+      <div class="senate-votes">${voteChips}</div>
+      <div class="card-footer">
+        <div class="status-dot ${hasEas ? 'dot-live' : 'dot-pending'}"></div>
+        ${hasEas
+          ? `<a class="eas-link live" href="https://base-sepolia.easscan.org/attestation/view/${d.easUid}" target="_blank">${easShort}</a>`
+          : `<span class="eas-link pending">${easShort}</span>`
+        }
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Fetch EAS attestations ──
+async function fetchAttestations() {
+  try {
+    const res = await fetch(EAS_GQL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: `{
+        attestations(
+          where: { schemaId: { equals: "${SCHEMA_UID}" } }
+          orderBy: { time: desc }
+          take: 20
+        ) {
+          id time txid attester decodedDataJson
+        }
+      }` }),
+    });
+    const { data } = await res.json();
+    const atts = data?.attestations ?? [];
+
+    document.getElementById('stat-attestations').textContent = atts.length;
+    document.getElementById('attest-count').textContent = `${atts.length} attestation${atts.length !== 1 ? 's' : ''}`;
+
+    const tbody = document.getElementById('attestations-body');
+    if (atts.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5">
+        <div class="empty-state">
+          <div class="icon">🕐</div>
+          <div>No attestations yet — run the pipeline to create some.</div>
+        </div>
+      </td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = atts.map(att => {
+      const uid     = att.id;
+      const uidShort= uid.slice(0, 10) + '…' + uid.slice(-6);
+      const time    = new Date(att.time * 1000).toLocaleString();
+      const txShort = att.txid ? att.txid.slice(0, 10) + '…' : '—';
+
+      // Try to find matching discovery by EAS UID
+      const disc = DISCOVERIES.find(d => d.easUid?.toLowerCase() === uid.toLowerCase());
+      const claim = disc ? disc.claim.slice(0, 60) + '…' : 'SimoProof Discovery';
+      const conf  = disc ? `${(disc.confidence * 100).toFixed(0)}%` : '—';
+
+      return `<tr>
+        <td>
+          <a class="mono" href="https://base-sepolia.easscan.org/attestation/view/${uid}" target="_blank">${uidShort}</a>
+        </td>
+        <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${claim}</td>
+        <td><span class="conf-pill conf-high">${conf}</span></td>
+        <td style="color:var(--muted);font-size:12px">${time}</td>
+        <td>
+          ${att.txid
+            ? `<a class="mono" href="https://sepolia.basescan.org/tx/${att.txid}" target="_blank">${txShort}</a>`
+            : '—'
+          }
+        </td>
+      </tr>`;
+    }).join('');
+  } catch (e) {
+    document.getElementById('stat-attestations').textContent = '—';
+    document.getElementById('attest-count').textContent = 'Could not load';
+    console.warn('EAS fetch failed:', e);
+  }
+}
+
+// ── Fetch ENS text records via eth_call ──
+async function fetchENS() {
+  try {
+    // namehash('node-1.simoproof.eth')
+    // We'll use a pre-computed namehash since we can't import viem
+    const node = '0x' + await computeNamehash(ENS_NAME);
+
+    const readText = async (key) => {
+      const fnSig  = '0x59d1d43c'; // text(bytes32,string)
+      const keyHex = encodeString(key);
+      const data   = fnSig + node.slice(2).padStart(64, '0') + '0000000000000000000000000000000000000000000000000000000000000040' + keyHex;
+      const res = await fetch(SEPOLIA_RPC, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0', id: 1, method: 'eth_call',
+          params: [{ to: ENS_RESOLVER, data }, 'latest'],
+        }),
+      });
+      const { result } = await res.json();
+      if (!result || result === '0x') return null;
+      return decodeString(result);
+    };
+
+    const [count, easUid] = await Promise.all([
+      readText('discoveries_count'),
+      readText('latest_eas_uid'),
+    ]);
+
+    document.getElementById('stat-ens').textContent = count ?? '—';
+    document.getElementById('ens-discoveries-count').textContent = count ?? '—';
+
+    if (easUid) {
+      const short = easUid.slice(0, 10) + '…' + easUid.slice(-6);
+      document.getElementById('ens-latest-eas').textContent = short;
+      document.getElementById('ens-latest-eas').href = `https://base-sepolia.easscan.org/attestation/view/${easUid}`;
+      document.getElementById('ens-latest-eas').style.cursor = 'pointer';
+    } else {
+      document.getElementById('ens-latest-eas').textContent = 'Not set';
+    }
+  } catch (e) {
+    document.getElementById('stat-ens').textContent = '—';
+    console.warn('ENS fetch failed:', e);
+  }
+}
+
+// ── Minimal ENS namehash ──
+async function computeNamehash(name) {
+  let node = new Uint8Array(32);
+  const labels = name.split('.').reverse();
+  for (const label of labels) {
+    const enc   = new TextEncoder().encode(label);
+    const lHash = new Uint8Array(await crypto.subtle.digest('SHA-256', enc));
+    const buf   = new Uint8Array(64);
+    buf.set(node, 0); buf.set(lHash, 32);
+    node = new Uint8Array(await crypto.subtle.digest('SHA-256', buf));
+  }
+  return Array.from(node).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// ── ABI helpers ──
+function encodeString(str) {
+  const enc  = new TextEncoder().encode(str);
+  const len  = enc.length;
+  const pad  = Math.ceil(len / 32) * 32;
+  const buf  = new Uint8Array(pad + 32);
+  const view = new DataView(buf.buffer);
+  view.setUint32(28, len); // length at offset 0, right-padded to 32 bytes
+  buf.set(enc, 32);
+  const hex = Array.from(buf).map(b => b.toString(16).padStart(2, '0')).join('');
+  // total = length word (32) + data words
+  const lenWord = len.toString(16).padStart(64, '0');
+  const dataHex = Array.from(enc).map(b => b.toString(16).padStart(2,'0')).join('').padEnd(Math.ceil(enc.length/32)*64, '0');
+  return lenWord + dataHex;
+}
+
+function decodeString(hex) {
+  if (hex.startsWith('0x')) hex = hex.slice(2);
+  if (hex.length < 128) return null;
+  const offset = parseInt(hex.slice(0, 64), 16) * 2;
+  const len    = parseInt(hex.slice(offset, offset + 64), 16);
+  if (!len) return null;
+  const bytes  = hex.slice(offset + 64, offset + 64 + len * 2);
+  return new TextDecoder().decode(new Uint8Array(bytes.match(/.{2}/g).map(b => parseInt(b, 16))));
+}
+
+// ── Init ──
+renderDiscoveries();
+fetchAttestations();
+fetchENS();
+
+// Refresh attestations every 30s
+setInterval(fetchAttestations, 30_000);
+setInterval(fetchENS, 30_000);
+</script>
+</body>
+</html>
