@@ -1,1019 +1,1761 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SimoProof — Verified Discovery Network</title>
-  <meta name="description" content="ZK-provable, ENS-native, decentralised protocol for verifying empirical claims. Every discovery generates an on-chain EAS attestation backed by a RISC Zero ZK proof." />
-  <style>
-    :root {
-      --bg:       #0a0c10;
-      --surface:  #111418;
-      --border:   #1e2530;
-      --accent:   #3b82f6;
-      --accent2:  #8b5cf6;
-      --green:    #22c55e;
-      --yellow:   #eab308;
-      --red:      #ef4444;
-      --text:     #e2e8f0;
-      --muted:    #64748b;
-      --mono:     'JetBrains Mono', 'Fira Code', monospace;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SimoProof — Verified Discovery Network</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+/* ─── TOKENS ─────────────────────────────────────────────────────────────── */
+:root {
+  --bg:        #090d08;
+  --bg2:       #111a0f;
+  --surface:   #182015;
+  --surface2:  #1f2b1b;
+  --border:    #2a3b26;
+  --border2:   #3a5033;
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+  --lime:      #aaff00;
+  --lime-dim:  #6ab800;
+  --coral:     #ff4040;
+  --amber:     #ffbb00;
+  --sky:       #00d4c8;
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      font-size: 14px;
-      line-height: 1.6;
-      min-height: 100vh;
-    }
+  --ink:       #eef5e8;
+  --ink2:      #b8ccb0;
+  --muted:     #5f7558;
+  --ghost:     #374d30;
 
-    a { color: var(--accent); text-decoration: none; }
-    a:hover { text-decoration: underline; }
+  --serif:     'DM Serif Display', Georgia, serif;
+  --sans:      'Outfit', system-ui, sans-serif;
+  --mono:      'JetBrains Mono', monospace;
 
-    /* ── Header ── */
-    header {
-      border-bottom: 1px solid var(--border);
-      padding: 0 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 60px;
-      position: sticky;
-      top: 0;
-      background: rgba(10,12,16,0.95);
-      backdrop-filter: blur(8px);
-      z-index: 100;
-    }
+  --r-sm:      6px;
+  --r-md:      12px;
+  --r-lg:      18px;
+}
 
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 17px;
-      font-weight: 700;
-      letter-spacing: -0.3px;
-    }
+/* ─── RESET ──────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.65;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
 
-    .logo-icon {
-      width: 32px; height: 32px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 16px;
-    }
+/* ─── GRID PAPER BACKGROUND ─────────────────────────────────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(170,255,0,.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(170,255,0,.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
 
-    .header-links {
-      display: flex; gap: 20px; align-items: center;
-    }
+/* ─── GRAIN OVERLAY ─────────────────────────────────────────────────────── */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity: .35;
+  pointer-events: none;
+  z-index: 0;
+}
 
-    .header-links a {
-      color: var(--muted);
-      font-size: 13px;
-      transition: color 0.15s;
-    }
-    .header-links a:hover { color: var(--text); text-decoration: none; }
+/* All content above grain */
+nav, main, footer { position: relative; z-index: 1; }
 
-    .badge {
-      display: inline-flex; align-items: center; gap: 5px;
-      background: rgba(59,130,246,0.12);
-      border: 1px solid rgba(59,130,246,0.3);
-      color: var(--accent);
-      padding: 3px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 600;
-    }
+/* ─── NAV ────────────────────────────────────────────────────────────────── */
+nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2.5rem;
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(16px);
+  background: rgba(9,13,8,.85);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.nav-mark {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  font-family: var(--mono);
+  font-size: .85rem;
+  font-weight: 700;
+  color: var(--lime);
+  letter-spacing: .04em;
+  text-decoration: none;
+}
+.nav-mark-hex {
+  width: 30px; height: 30px;
+  background: var(--lime);
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .9rem;
+  color: var(--bg);
+}
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1.8rem;
+}
+.nav-links a {
+  font-size: .82rem;
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 500;
+  letter-spacing: .03em;
+  transition: color .2s;
+}
+.nav-links a:hover { color: var(--ink); }
+.nav-pill {
+  background: rgba(170,255,0,.12);
+  border: 1px solid rgba(170,255,0,.25);
+  color: var(--lime) !important;
+  padding: .3rem .85rem;
+  border-radius: 20px;
+  font-size: .75rem !important;
+  font-weight: 600 !important;
+}
 
-    /* ── Hero ── */
-    .hero {
-      text-align: center;
-      padding: 64px 24px 48px;
-      max-width: 720px;
-      margin: 0 auto;
-    }
+/* ─── HERO ───────────────────────────────────────────────────────────────── */
+.hero {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 6rem 2rem 4rem;
+  text-align: center;
+}
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  font-family: var(--mono);
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--lime);
+  margin-bottom: 1.8rem;
+}
+.hero-eyebrow::before,
+.hero-eyebrow::after {
+  content: '';
+  display: block;
+  width: 28px;
+  height: 1px;
+  background: var(--lime);
+  opacity: .5;
+}
+.hero h1 {
+  font-family: var(--serif);
+  font-size: clamp(2.8rem, 6vw, 5rem);
+  font-weight: 400;
+  line-height: 1.1;
+  color: var(--ink);
+  margin-bottom: 1.4rem;
+  letter-spacing: -.02em;
+}
+.hero h1 em {
+  font-style: italic;
+  color: var(--lime);
+}
+.hero-sub {
+  font-size: 1.05rem;
+  color: var(--ink2);
+  max-width: 560px;
+  margin: 0 auto 2.5rem;
+  font-weight: 300;
+  line-height: 1.75;
+}
+.hero-actions {
+  display: flex;
+  justify-content: center;
+  gap: .9rem;
+  flex-wrap: wrap;
+}
 
-    .hero-tag {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: rgba(139,92,246,0.1);
-      border: 1px solid rgba(139,92,246,0.25);
-      color: #a78bfa;
-      padding: 4px 14px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      margin-bottom: 20px;
-    }
+/* ─── BUTTONS ────────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  padding: .7rem 1.6rem;
+  border-radius: var(--r-sm);
+  font-family: var(--mono);
+  font-size: .78rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  cursor: pointer;
+  border: none;
+  transition: all .2s;
+  text-decoration: none;
+}
+.btn-lime {
+  background: var(--lime);
+  color: var(--bg);
+}
+.btn-lime:hover {
+  background: #c8ff33;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(170,255,0,.3);
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--ink2);
+  border: 1px solid var(--border2);
+}
+.btn-ghost:hover { border-color: var(--lime); color: var(--lime); }
 
-    h1 {
-      font-size: clamp(28px, 5vw, 44px);
-      font-weight: 800;
-      letter-spacing: -1px;
-      line-height: 1.15;
-      margin-bottom: 16px;
-      background: linear-gradient(135deg, #e2e8f0 0%, #94a3b8 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
+/* ─── STAT STRIP ─────────────────────────────────────────────────────────── */
+.stat-strip {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  max-width: 620px;
+  margin: 3.5rem auto 5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background: var(--surface);
+}
+.stat-item {
+  flex: 1;
+  padding: 1.1rem 1rem;
+  text-align: center;
+  border-right: 1px solid var(--border);
+}
+.stat-item:last-child { border-right: none; }
+.stat-num {
+  font-family: var(--mono);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--lime);
+  line-height: 1;
+  margin-bottom: .2rem;
+}
+.stat-lbl {
+  font-size: .65rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+}
 
-    .hero-sub {
-      color: var(--muted);
-      font-size: 16px;
-      line-height: 1.7;
-      max-width: 560px;
-      margin: 0 auto 32px;
-    }
+/* ─── SECTION ────────────────────────────────────────────────────────────── */
+.section {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0 2rem 5rem;
+}
+.section-label {
+  font-family: var(--mono);
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--lime);
+  margin-bottom: .6rem;
+}
+.section-title {
+  font-family: var(--serif);
+  font-size: 1.9rem;
+  font-weight: 400;
+  margin-bottom: .5rem;
+  letter-spacing: -.01em;
+}
+.section-desc {
+  color: var(--ink2);
+  font-size: .9rem;
+  margin-bottom: 2rem;
+  font-weight: 300;
+}
+hr.divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 0 2rem 4rem;
+  max-width: 1040px;
+  margin-left: auto;
+  margin-right: auto;
+}
 
-    .hero-cta {
-      display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
-    }
+/* ─── DEMO LAYOUT ────────────────────────────────────────────────────────── */
+.demo-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+  margin-bottom: 1.2rem;
+}
+@media (max-width: 720px) { .demo-grid { grid-template-columns: 1fr; } }
 
-    .btn {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 10px 22px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s;
-      text-decoration: none;
-    }
+/* ─── CARD ───────────────────────────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .85rem 1.2rem;
+  border-bottom: 1px solid var(--border);
+}
+.card-head-title {
+  font-family: var(--mono);
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink2);
+}
+.card-body { padding: 1.2rem; }
 
-    .btn-primary {
-      background: var(--accent);
-      color: #fff;
-      border: none;
-    }
-    .btn-primary:hover { background: #2563eb; text-decoration: none; }
+/* ─── PRESET CHIPS ───────────────────────────────────────────────────────── */
+.presets-wrap { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: 1rem; }
+.preset {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--ink2);
+  padding: .28rem .65rem;
+  border-radius: 4px;
+  font-size: .72rem;
+  font-family: var(--mono);
+  cursor: pointer;
+  transition: all .15s;
+}
+.preset:hover { border-color: var(--lime); color: var(--lime); }
+.preset.on {
+  background: rgba(170,255,0,.1);
+  border-color: rgba(170,255,0,.4);
+  color: var(--lime);
+}
+textarea.claim-ta {
+  width: 100%;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: .8rem;
+  padding: .85rem;
+  resize: vertical;
+  min-height: 88px;
+  line-height: 1.6;
+  transition: border .2s;
+}
+textarea.claim-ta:focus { outline: none; border-color: var(--lime); }
+.claim-meta {
+  display: flex;
+  gap: .5rem;
+  margin-top: .6rem;
+  flex-wrap: wrap;
+}
+.meta-chip {
+  font-family: var(--mono);
+  font-size: .68rem;
+  color: var(--muted);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: .2rem .5rem;
+}
+.meta-chip span { color: var(--lime); }
 
-    .btn-outline {
-      background: transparent;
-      color: var(--text);
-      border: 1px solid var(--border);
-    }
-    .btn-outline:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+/* ─── RUN BUTTON ─────────────────────────────────────────────────────────── */
+.run-row { display: flex; gap: .75rem; align-items: center; margin-top: 1rem; }
+.run-btn {
+  background: var(--lime);
+  color: var(--bg);
+  border: none;
+  border-radius: var(--r-sm);
+  font-family: var(--mono);
+  font-size: .8rem;
+  font-weight: 700;
+  padding: .7rem 1.4rem;
+  cursor: pointer;
+  transition: all .2s;
+  letter-spacing: .05em;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+.run-btn:hover:not(:disabled) {
+  background: #c8ff33;
+  box-shadow: 0 0 24px rgba(170,255,0,.35);
+  transform: translateY(-1px);
+}
+.run-btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+.run-status {
+  font-family: var(--mono);
+  font-size: .72rem;
+  color: var(--muted);
+  transition: color .3s;
+}
+.run-status.running { color: var(--lime); }
+.run-status.done { color: var(--lime); }
+.run-status.fail { color: var(--coral); }
 
-    /* ── Stats bar ── */
-    .stats-bar {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 1px;
-      background: var(--border);
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 40px;
-    }
+/* ─── PIPELINE STEPS (vertical timeline) ────────────────────────────────── */
+.pipeline-card { padding: 1rem 1.2rem; }
+.steps-list { display: flex; flex-direction: column; gap: 0; }
+.step-row {
+  display: flex;
+  align-items: flex-start;
+  gap: .9rem;
+  cursor: pointer;
+  padding: .55rem .5rem;
+  border-radius: var(--r-sm);
+  transition: background .15s;
+  position: relative;
+}
+.step-row:hover { background: rgba(170,255,0,.03); }
+.step-left { display: flex; flex-direction: column; align-items: center; gap: 0; }
+.step-dot {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .8rem;
+  background: var(--bg2);
+  transition: all .35s;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+.step-line {
+  width: 1px;
+  flex: 1;
+  min-height: 18px;
+  background: var(--border);
+  transition: background .4s;
+}
+.step-row:last-child .step-line { display: none; }
+.step-row.s-active .step-dot {
+  border-color: var(--lime);
+  background: rgba(170,255,0,.15);
+  box-shadow: 0 0 14px rgba(170,255,0,.4);
+  animation: ring 1.4s ease-in-out infinite;
+}
+.step-row.s-done .step-dot {
+  border-color: var(--lime);
+  background: rgba(170,255,0,.15);
+}
+.step-row.s-done .step-line { background: var(--lime); }
+.step-row.s-error .step-dot { border-color: var(--coral); background: rgba(255,64,64,.12); }
+@keyframes ring {
+  0%, 100% { box-shadow: 0 0 8px rgba(170,255,0,.3); }
+  50%       { box-shadow: 0 0 20px rgba(170,255,0,.6); }
+}
+.step-info { flex: 1; padding-top: .18rem; }
+.step-name {
+  font-family: var(--mono);
+  font-size: .76rem;
+  font-weight: 700;
+  color: var(--ink2);
+  transition: color .2s;
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+}
+.step-row.s-active .step-name { color: var(--lime); }
+.step-row.s-done .step-name { color: var(--lime); }
+.step-row.s-error .step-name { color: var(--coral); }
+.step-sub {
+  font-size: .7rem;
+  color: var(--muted);
+  margin-top: .1rem;
+}
+.step-badge {
+  font-family: var(--mono);
+  font-size: .62rem;
+  font-weight: 700;
+  padding: .12rem .4rem;
+  border-radius: 3px;
+  letter-spacing: .04em;
+}
+.badge-lime  { background: rgba(170,255,0,.15); color: var(--lime); }
+.badge-coral { background: rgba(255,64,64,.15);  color: var(--coral); }
+.badge-muted { background: var(--surface2); color: var(--muted); }
+.badge-spin  { background: rgba(170,255,0,.12); color: var(--lime); animation: blink .7s infinite; }
+@keyframes blink { 0%,100% { opacity:1; } 50% { opacity:.35; } }
 
-    .stat {
-      background: var(--surface);
-      padding: 20px 24px;
-      text-align: center;
-    }
+/* ─── DETAIL AREA ────────────────────────────────────────────────────────── */
+.detail-area {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  margin-top: 1.2rem;
+  min-height: 320px;
+  overflow: hidden;
+}
+.detail-head {
+  padding: .8rem 1.2rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+}
+.d-dot { width: 8px; height: 8px; border-radius: 50%; }
+.detail-panel { display: none; padding: 1.4rem; animation: fade-up .25s ease; }
+.detail-panel.dp-active { display: block; }
+@keyframes fade-up { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
 
-    .stat-value {
-      font-size: 28px;
-      font-weight: 800;
-      letter-spacing: -1px;
-      color: var(--text);
-      font-family: var(--mono);
-    }
+/* ─── TERMINAL ───────────────────────────────────────────────────────────── */
+.terminal {
+  background: #060908;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+}
+.terminal-bar {
+  padding: .4rem .85rem;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: .65rem;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+}
+.t-blob { width: 8px; height: 8px; border-radius: 50%; }
+.terminal-body {
+  padding: .85rem;
+  font-family: var(--mono);
+  font-size: .73rem;
+  line-height: 1.75;
+  max-height: 200px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.t-dim    { color: #3a5032; }
+.t-normal { color: #7fa070; }
+.t-lime   { color: var(--lime); }
+.t-coral  { color: var(--coral); }
+.t-amber  { color: var(--amber); }
+.t-sky    { color: var(--sky); }
 
-    .stat-value.loading { color: var(--muted); font-size: 18px; }
+/* ─── SENATE CHAMBER ─────────────────────────────────────────────────────── */
+.senate-chamber-label {
+  font-family: var(--mono);
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+  margin-bottom: 1rem;
+}
+.senate-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: .8rem;
+  margin-bottom: 1rem;
+}
+@media (max-width: 640px) { .senate-grid { grid-template-columns: repeat(2,1fr); } }
 
-    .stat-label {
-      font-size: 11px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-top: 4px;
-    }
+/* 3D FLIP CARD */
+.flip-wrap {
+  perspective: 800px;
+  height: 168px;
+}
+.flip-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform .55s cubic-bezier(.42,0,.17,1.2);
+}
+.flip-inner.flipped { transform: rotateY(180deg); }
+.flip-face {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r-md);
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+}
+.flip-front {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  justify-content: space-between;
+}
+.flip-back {
+  transform: rotateY(180deg);
+  border: 1px solid;
+  justify-content: space-between;
+}
+.flip-back.vote-endorse {
+  background: rgba(170,255,0,.06);
+  border-color: rgba(170,255,0,.3);
+}
+.flip-back.vote-reject {
+  background: rgba(255,64,64,.06);
+  border-color: rgba(255,64,64,.3);
+}
+.senator-glyph {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+.senator-nomen {
+  font-family: var(--mono);
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-top: .35rem;
+}
+.senator-role-txt {
+  font-size: .66rem;
+  color: var(--muted);
+  margin-top: .15rem;
+  line-height: 1.3;
+}
+.senator-thinking {
+  font-size: .65rem;
+  color: var(--lime);
+  font-family: var(--mono);
+  animation: blink .8s infinite;
+}
+.vote-stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  padding: .22rem .55rem;
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: .72rem;
+  font-weight: 700;
+  align-self: flex-start;
+}
+.vote-stamp.e { background: rgba(170,255,0,.2); color: var(--lime); }
+.vote-stamp.r { background: rgba(255,64,64,.2); color: var(--coral); }
+.back-name {
+  font-family: var(--mono);
+  font-size: .7rem;
+  font-weight: 700;
+  color: var(--ink2);
+  margin-bottom: .3rem;
+}
+.back-reason {
+  font-size: .7rem;
+  color: var(--ink2);
+  line-height: 1.5;
+  font-style: italic;
+}
 
-    /* ── Main layout ── */
-    main {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 0 24px 80px;
-    }
+/* CONSENSUS METER */
+.consensus-meter {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: .7rem 1rem;
+  margin-top: .2rem;
+}
+.c-label { font-family: var(--mono); font-size: .72rem; color: var(--muted); font-weight: 600; }
+.c-dots { display: flex; gap: .35rem; }
+.c-dot {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border2);
+  background: var(--surface);
+  transition: all .3s;
+}
+.c-dot.filled-e { background: var(--lime); border-color: var(--lime); box-shadow: 0 0 6px rgba(170,255,0,.5); }
+.c-dot.filled-r { background: var(--coral); border-color: var(--coral); }
+.c-result {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: .78rem;
+  font-weight: 700;
+}
+.c-result.pass { color: var(--lime); }
+.c-result.fail { color: var(--coral); }
 
-    .section-header {
-      display: flex; align-items: center; gap: 12px;
-      margin-bottom: 20px;
-    }
+/* ─── ZK PROOF PANEL ─────────────────────────────────────────────────────── */
+.proof-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; margin-bottom: 1rem; }
+.proof-fill {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, var(--lime), var(--sky));
+  transition: width .25s ease;
+}
+.proof-grid {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: .15rem .75rem;
+  font-family: var(--mono);
+  font-size: .72rem;
+  line-height: 1.65;
+}
+.pk { color: var(--muted); }
+.pv { color: #a8c8a0; word-break: break-all; }
+.pv.ok { color: var(--lime); }
 
-    .section-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--text);
-    }
+/* ─── EAS PANEL ──────────────────────────────────────────────────────────── */
+.eas-uid-display {
+  font-family: var(--mono);
+  font-size: .76rem;
+  color: var(--sky);
+  word-break: break-all;
+  padding: .75rem;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  margin: .75rem 0;
+  line-height: 1.6;
+}
+.eas-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .4rem;
+  font-size: .73rem;
+}
+.eas-field {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: .4rem .6rem;
+}
+.ef-key { color: var(--muted); font-family: var(--mono); font-size: .65rem; margin-bottom: .15rem; }
+.ef-val { font-family: var(--mono); font-size: .72rem; color: var(--ink2); }
+.ef-val.ok { color: var(--lime); }
+.eas-ext-link {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  font-family: var(--mono);
+  font-size: .74rem;
+  color: var(--sky);
+  text-decoration: none;
+  margin-top: .5rem;
+  transition: color .2s;
+}
+.eas-ext-link:hover { color: var(--lime); }
 
-    .section-sub {
-      font-size: 13px;
-      color: var(--muted);
-      margin-left: auto;
-    }
+/* ─── ENS PANEL ──────────────────────────────────────────────────────────── */
+.ens-name-display {
+  font-family: var(--mono);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--lime);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+.ens-record {
+  display: flex;
+  gap: .5rem;
+  font-family: var(--mono);
+  font-size: .74rem;
+  padding: .3rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.ens-record:last-child { border-bottom: none; }
+.erk { color: var(--muted); min-width: 175px; flex-shrink: 0; }
+.erv { color: var(--sky); }
+.erv.flash { color: var(--lime); animation: greenflash .8s; }
+@keyframes greenflash {
+  0%   { background: rgba(170,255,0,.2); }
+  100% { background: transparent; }
+}
 
-    .divider { width: 1px; height: 16px; background: var(--border); }
+/* ─── RESULT BANNER ──────────────────────────────────────────────────────── */
+.result-banner {
+  display: none;
+  border-radius: var(--r-lg);
+  border: 1px solid;
+  padding: 1.4rem 1.6rem;
+  margin-top: 1.2rem;
+  animation: fade-up .35s ease;
+  gap: 1.2rem;
+  align-items: center;
+}
+.result-banner.open { display: flex; }
+.result-banner.ok {
+  background: rgba(170,255,0,.06);
+  border-color: rgba(170,255,0,.25);
+}
+.result-banner.err {
+  background: rgba(255,64,64,.06);
+  border-color: rgba(255,64,64,.25);
+}
+.result-big { font-size: 2rem; }
+.result-text h4 { font-family: var(--serif); font-size: 1.15rem; font-weight: 400; }
+.result-text p { font-size: .82rem; color: var(--ink2); margin-top: .2rem; }
+.result-links { margin-left: auto; display: flex; gap: .6rem; flex-wrap: wrap; }
+.result-link {
+  font-family: var(--mono);
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--lime);
+  border: 1px solid rgba(170,255,0,.3);
+  background: rgba(170,255,0,.08);
+  padding: .4rem .85rem;
+  border-radius: var(--r-sm);
+  text-decoration: none;
+  letter-spacing: .04em;
+  transition: all .2s;
+}
+.result-link:hover { background: rgba(170,255,0,.15); }
 
-    /* ── Pipeline steps ── */
-    .pipeline {
-      display: flex;
-      align-items: center;
-      gap: 0;
-      overflow-x: auto;
-      padding: 20px 0;
-      margin-bottom: 40px;
-    }
+/* ─── LIVE FEED ──────────────────────────────────────────────────────────── */
+.feed-list { display: flex; flex-direction: column; gap: .5rem; }
+.feed-row {
+  display: flex;
+  align-items: center;
+  gap: .9rem;
+  padding: .85rem 1.1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  text-decoration: none;
+  transition: border .2s;
+  color: inherit;
+}
+.feed-row:hover { border-color: var(--border2); }
+.feed-row.new-item { border-color: rgba(170,255,0,.3); animation: fade-up .35s; }
+.feed-pulse {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--lime);
+  box-shadow: 0 0 7px var(--lime);
+  flex-shrink: 0;
+}
+.feed-claim { flex: 1; font-size: .83rem; color: var(--ink2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.feed-uid { font-family: var(--mono); font-size: .68rem; color: var(--ghost); flex-shrink: 0; }
+.feed-tag {
+  font-family: var(--mono);
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  padding: .15rem .45rem;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.tag-verified { background: rgba(170,255,0,.12); color: var(--lime); }
+.tag-new      { background: rgba(170,255,0,.2);  color: var(--lime); }
 
-    .pipeline-step {
-      flex: 1;
-      min-width: 110px;
-      text-align: center;
-      position: relative;
-    }
+/* ─── CONTRACTS GRID ─────────────────────────────────────────────────────── */
+.contracts-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .9rem;
+}
+@media (max-width: 720px) { .contracts-grid { grid-template-columns: 1fr; } }
+.contract-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 1.1rem;
+  transition: border .2s;
+}
+.contract-card:hover { border-color: var(--border2); }
+.cc-head {
+  font-family: var(--mono);
+  font-size: .7rem;
+  font-weight: 700;
+  color: var(--lime);
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  margin-bottom: .2rem;
+}
+.cc-net {
+  font-size: .7rem;
+  color: var(--muted);
+  margin-bottom: .6rem;
+}
+.cc-addr {
+  font-family: var(--mono);
+  font-size: .68rem;
+  color: #5a7a52;
+  word-break: break-all;
+  margin-bottom: .6rem;
+  line-height: 1.5;
+}
+.cc-link { font-family: var(--mono); font-size: .7rem; color: var(--sky); text-decoration: none; }
+.cc-link:hover { color: var(--lime); }
 
-    .pipeline-step::after {
-      content: '';
-      position: absolute;
-      right: -1px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 24px;
-      height: 2px;
-      background: var(--border);
-    }
-    .pipeline-step:last-child::after { display: none; }
+/* ─── PRIZES ─────────────────────────────────────────────────────────────── */
+.prize-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: .9rem; }
+@media (max-width: 640px) { .prize-grid { grid-template-columns: 1fr; } }
+.prize-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 1.5rem 1.2rem;
+  text-align: center;
+  transition: all .2s;
+}
+.prize-card:hover { border-color: var(--lime); transform: translateY(-3px); }
+.prize-mark { font-size: 2rem; margin-bottom: .6rem; }
+.prize-sponsor { font-family: var(--mono); font-size: .65rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: .2rem; }
+.prize-track { font-size: .85rem; font-weight: 600; margin-bottom: .4rem; }
+.prize-amt { font-family: var(--mono); font-size: 1.5rem; font-weight: 700; color: var(--lime); }
+.prize-note { font-size: .73rem; color: var(--muted); margin-top: .4rem; line-height: 1.4; }
 
-    .step-icon {
-      width: 44px; height: 44px;
-      border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 20px;
-      margin: 0 auto 8px;
-      border: 1px solid var(--border);
-      background: var(--surface);
-    }
+/* ─── FOOTER ─────────────────────────────────────────────────────────────── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 1.8rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: .75rem;
+  font-size: .78rem;
+  color: var(--muted);
+  font-family: var(--mono);
+}
+footer a { color: var(--lime); text-decoration: none; }
 
-    .step-name { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
-    .step-tech { font-size: 12px; color: var(--accent); margin-top: 2px; }
-
-    /* ── Discoveries grid ── */
-    .discoveries-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 16px;
-      margin-bottom: 48px;
-    }
-
-    .discovery-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px;
-      transition: border-color 0.15s;
-    }
-    .discovery-card:hover { border-color: rgba(59,130,246,0.4); }
-
-    .card-header {
-      display: flex; justify-content: space-between; align-items: flex-start;
-      margin-bottom: 12px;
-    }
-
-    .card-id {
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--muted);
-      background: rgba(255,255,255,0.04);
-      padding: 2px 8px;
-      border-radius: 4px;
-    }
-
-    .conf-pill {
-      font-family: var(--mono);
-      font-size: 11px;
-      font-weight: 700;
-      padding: 2px 8px;
-      border-radius: 4px;
-    }
-    .conf-high { background: rgba(34,197,94,0.12); color: var(--green); }
-    .conf-mid  { background: rgba(234,179,8,0.12);  color: var(--yellow); }
-
-    .card-claim {
-      font-size: 13px;
-      color: var(--text);
-      line-height: 1.55;
-      margin-bottom: 14px;
-      font-weight: 500;
-    }
-
-    .senate-votes {
-      display: flex; gap: 6px; flex-wrap: wrap;
-      margin-bottom: 14px;
-    }
-
-    .vote-chip {
-      font-size: 11px;
-      padding: 3px 8px;
-      border-radius: 4px;
-      font-weight: 600;
-    }
-    .vote-endorse { background: rgba(34,197,94,0.1);  color: var(--green); border: 1px solid rgba(34,197,94,0.2); }
-    .vote-reject  { background: rgba(239,68,68,0.1);  color: var(--red);   border: 1px solid rgba(239,68,68,0.2); }
-
-    .card-footer {
-      display: flex; align-items: center; gap: 8px;
-      padding-top: 12px;
-      border-top: 1px solid var(--border);
-    }
-
-    .eas-link {
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--muted);
-      flex: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .eas-link.live { color: var(--green); }
-    .eas-link.pending { color: var(--muted); font-style: italic; }
-
-    .status-dot {
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-    .dot-live    { background: var(--green); box-shadow: 0 0 6px var(--green); }
-    .dot-pending { background: var(--muted); }
-
-    /* ── Attestations table ── */
-    .attestations-section { margin-bottom: 48px; }
-
-    .table-wrap {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      overflow: hidden;
-    }
-
-    table { width: 100%; border-collapse: collapse; }
-    th {
-      text-align: left;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      color: var(--muted);
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--border);
-      background: rgba(255,255,255,0.02);
-      font-weight: 600;
-    }
-    td {
-      padding: 12px 16px;
-      font-size: 13px;
-      border-bottom: 1px solid rgba(30,37,48,0.6);
-      vertical-align: middle;
-    }
-    tr:last-child td { border-bottom: none; }
-    tr:hover td { background: rgba(255,255,255,0.02); }
-
-    .mono { font-family: var(--mono); font-size: 12px; }
-
-    .empty-state {
-      text-align: center;
-      padding: 48px 24px;
-      color: var(--muted);
-    }
-    .empty-state .icon { font-size: 32px; margin-bottom: 12px; }
-
-    /* ── ENS + tech cards ── */
-    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 48px; }
-    @media (max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
-
-    .info-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px;
-    }
-
-    .info-card h3 {
-      font-size: 13px;
-      font-weight: 700;
-      margin-bottom: 14px;
-      display: flex; align-items: center; gap: 8px;
-    }
-
-    .kv-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 0;
-      border-bottom: 1px solid rgba(30,37,48,0.6);
-      font-size: 12px;
-    }
-    .kv-row:last-child { border-bottom: none; }
-    .kv-key { color: var(--muted); font-family: var(--mono); }
-    .kv-val { color: var(--text); font-family: var(--mono); text-align: right; max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .kv-val.green { color: var(--green); }
-    .kv-val.accent { color: var(--accent); }
-
-    /* ── Stack section ── */
-    .stack-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 12px;
-      margin-bottom: 48px;
-    }
-
-    .stack-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 16px;
-      display: flex; align-items: center; gap: 12px;
-    }
-
-    .stack-icon {
-      font-size: 24px;
-      width: 40px; height: 40px;
-      display: flex; align-items: center; justify-content: center;
-      background: rgba(255,255,255,0.04);
-      border-radius: 8px;
-      flex-shrink: 0;
-    }
-
-    .stack-name { font-size: 13px; font-weight: 700; }
-    .stack-role { font-size: 11px; color: var(--muted); margin-top: 2px; }
-    .stack-prize { font-size: 10px; color: #fbbf24; font-weight: 700; margin-top: 4px; }
-
-    /* ── Footer ── */
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 24px;
-      text-align: center;
-      color: var(--muted);
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 24px;
-      flex-wrap: wrap;
-    }
-
-    footer a { color: var(--muted); }
-    footer a:hover { color: var(--text); }
-
-    /* ── Pulse animation for live dot ── */
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
-    }
-    .dot-live { animation: pulse 2s infinite; }
-
-    /* ── Loading spinner ── */
-    .spinner {
-      display: inline-block;
-      width: 14px; height: 14px;
-      border: 2px solid var(--border);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-  </style>
+/* ─── SPINNER ────────────────────────────────────────────────────────────── */
+.spin {
+  width: 13px; height: 13px;
+  border: 2px solid rgba(9,13,8,.4);
+  border-top-color: var(--bg);
+  border-radius: 50%;
+  animation: spinr .65s linear infinite;
+}
+@keyframes spinr { to { transform: rotate(360deg); } }
+</style>
 </head>
 <body>
 
-<!-- ── Header ── -->
-<header>
-  <div class="logo">
-    <div class="logo-icon">🔬</div>
-    SimoProof
-  </div>
-  <div class="header-links">
+<!-- ─── NAV ──────────────────────────────────────────────────────────────── -->
+<nav>
+  <a class="nav-mark" href="#top">
+    <div class="nav-mark-hex">S</div>
+    SIMOPROOF
+  </a>
+  <div class="nav-links">
+    <a href="#demo">Demo</a>
+    <a href="#feed">Attestations</a>
     <a href="https://github.com/web3guru888/simoproof" target="_blank">GitHub</a>
     <a href="https://base-sepolia.easscan.org/schema/view/0x86704ade90c66f1fc5071d0a00e8d0c5055f4c5048d8ae2d7866cf55b3a319a2" target="_blank">EAS Schema</a>
-    <a href="https://ethglobal.com/events/open-agents" target="_blank">
-      <span class="badge">🏆 ETHGlobal Open Agents</span>
-    </a>
+    <a href="https://ethglobal.com/events/agents" target="_blank" class="nav-pill">🏆 ETHGlobal Open Agents</a>
   </div>
-</header>
+</nav>
 
-<!-- ── Hero ── -->
-<div class="hero">
-  <div class="hero-tag">⚡ Live on Base Sepolia Testnet</div>
-  <h1>Verified Discovery<br/>Network</h1>
-  <p class="hero-sub">
-    Every empirical claim is voted on by a 4-agent AI senate, proven with a RISC Zero ZK proof,
-    and permanently attested on-chain via EAS — anchored to an ENS identity.
-  </p>
-  <div class="hero-cta">
-    <a class="btn btn-primary" href="https://base-sepolia.easscan.org/schema/view/0x86704ade90c66f1fc5071d0a00e8d0c5055f4c5048d8ae2d7866cf55b3a319a2" target="_blank">
-      🔗 View Attestations
-    </a>
-    <a class="btn btn-outline" href="https://github.com/web3guru888/simoproof" target="_blank">
-      ⭐ GitHub Repo
-    </a>
+<main id="top">
+
+<!-- ─── HERO ─────────────────────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-eyebrow">Verified Discovery Network</div>
+  <h1>Every claim <em>proven.</em><br>Every vote on-chain.</h1>
+  <p class="hero-sub">Four ASI:One AI senators deliberate on empirical claims. A RISC Zero ZK proof seals their verdict. An EAS attestation makes it permanent. An ENS name gives the agent its identity.</p>
+  <div class="hero-actions">
+    <a href="#demo" class="btn btn-lime">▶ Run Interactive Demo</a>
+    <a href="https://github.com/web3guru888/simoproof" target="_blank" class="btn btn-ghost">★ View Source</a>
+  </div>
+</section>
+
+<!-- ─── STAT STRIP ────────────────────────────────────────────────────────── -->
+<div class="stat-strip">
+  <div class="stat-item">
+    <div class="stat-num" id="stat-total">10</div>
+    <div class="stat-lbl">Verified Discoveries</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">4</div>
+    <div class="stat-lbl">Senate Agents</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">7</div>
+    <div class="stat-lbl">Pipeline Steps</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num" style="color:var(--amber)">$15k</div>
+    <div class="stat-lbl">Prize Target</div>
   </div>
 </div>
 
-<!-- ── Stats bar ── -->
-<div class="stats-bar">
-  <div class="stat">
-    <div class="stat-value" id="stat-attestations"><span class="spinner"></span></div>
-    <div class="stat-label">EAS Attestations</div>
-  </div>
-  <div class="stat">
-    <div class="stat-value" id="stat-discoveries">5</div>
-    <div class="stat-label">Discovery Fixtures</div>
-  </div>
-  <div class="stat">
-    <div class="stat-value" id="stat-ens"><span class="spinner"></span></div>
-    <div class="stat-label">ENS discoveries_count</div>
-  </div>
-  <div class="stat">
-    <div class="stat-value">4</div>
-    <div class="stat-label">Senate Sims (ASI:One)</div>
-  </div>
-  <div class="stat">
-    <div class="stat-value">5</div>
-    <div class="stat-label">KeeperHub Workflows</div>
-  </div>
-</div>
+<hr class="divider" />
 
-<!-- ── Main ── -->
-<main>
+<!-- ─── INTERACTIVE DEMO ──────────────────────────────────────────────────── -->
+<section class="section" id="demo">
+  <div class="section-label">Interactive Demo</div>
+  <div class="section-title">Submit a claim. Watch the tribunal.</div>
+  <div class="section-desc">Select a pre-loaded discovery or enter your own. The full 7-step pipeline animates in real time.</div>
 
-  <!-- Pipeline diagram -->
-  <div class="section-header">
-    <div class="section-title">7-Step Pipeline</div>
-  </div>
-  <div class="pipeline">
-    <div class="pipeline-step">
-      <div class="step-icon">📡</div>
-      <div class="step-name">Discovery</div>
-      <div class="step-tech">World Bank / IPCC</div>
-    </div>
-    <div class="pipeline-step">
-      <div class="step-icon">🌐</div>
-      <div class="step-name">AXL</div>
-      <div class="step-tech">Gensyn P2P</div>
-    </div>
-    <div class="pipeline-step">
-      <div class="step-icon">🗳️</div>
-      <div class="step-name">Senate</div>
-      <div class="step-tech">ASI:One 4-Sim</div>
-    </div>
-    <div class="pipeline-step">
-      <div class="step-icon">🔐</div>
-      <div class="step-name">ZK Proof</div>
-      <div class="step-tech">RISC Zero</div>
-    </div>
-    <div class="pipeline-step">
-      <div class="step-icon">🗄️</div>
-      <div class="step-name">Storage</div>
-      <div class="step-tech">0G Network</div>
-    </div>
-    <div class="pipeline-step">
-      <div class="step-icon">✅</div>
-      <div class="step-name">Attest</div>
-      <div class="step-tech">EAS on Base</div>
-    </div>
-    <div class="pipeline-step">
-      <div class="step-icon">🏷️</div>
-      <div class="step-name">ENS Update</div>
-      <div class="step-tech">ENSIP-25</div>
-    </div>
-  </div>
+  <!-- TOP GRID: input left, pipeline right -->
+  <div class="demo-grid">
 
-  <!-- Discovery cards -->
-  <div class="section-header">
-    <div class="section-title">Discovery Fixtures</div>
-    <div class="section-sub">Empirical claims from World Bank, IPCC, NOAA, WHO</div>
-  </div>
-  <div class="discoveries-grid" id="discoveries-grid">
-    <!-- Populated by JS -->
-  </div>
-
-  <!-- Live attestations table -->
-  <div class="attestations-section">
-    <div class="section-header">
-      <div class="section-title">Live EAS Attestations</div>
-      <span class="divider"></span>
-      <div class="section-sub" id="attest-count">Loading…</div>
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>EAS UID</th>
-            <th>Claim</th>
-            <th>Confidence</th>
-            <th>Time</th>
-            <th>Tx</th>
-          </tr>
-        </thead>
-        <tbody id="attestations-body">
-          <tr><td colspan="5">
-            <div class="empty-state">
-              <div class="icon"><span class="spinner"></span></div>
-              <div>Loading attestations from EAS…</div>
-            </div>
-          </td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- ENS + Contract info -->
-  <div class="two-col">
-    <div class="info-card">
-      <h3>🏷️ ENS Identity — node-1.simoproof.eth</h3>
-      <div class="kv-row">
-        <span class="kv-key">agent_type</span>
-        <span class="kv-val green">simoproof-discovery-node</span>
+    <!-- LEFT: Claim input -->
+    <div class="card">
+      <div class="card-head">
+        <span class="card-head-title">📋 Discovery Claim</span>
       </div>
-      <div class="kv-row">
-        <span class="kv-key">protocol_version</span>
-        <span class="kv-val accent">3.0</span>
-      </div>
-      <div class="kv-row">
-        <span class="kv-key">discoveries_count</span>
-        <span class="kv-val" id="ens-discoveries-count"><span class="spinner"></span></span>
-      </div>
-      <div class="kv-row">
-        <span class="kv-key">latest_eas_uid</span>
-        <span class="kv-val accent" id="ens-latest-eas" style="font-size:10px">Loading…</span>
-      </div>
-      <div class="kv-row">
-        <span class="kv-key">capabilities</span>
-        <span class="kv-val" style="font-size:10px">zk-proof,eas-attest,senate-vote</span>
+      <div class="card-body">
+        <div class="presets-wrap" id="presetBtns">
+          <button class="preset on" data-idx="0">🧊 Arctic Ice</button>
+          <button class="preset" data-idx="1">🌡 +1.45 °C</button>
+          <button class="preset" data-idx="2">🏭 CO₂ 421 ppm</button>
+          <button class="preset" data-idx="3">🫁 PM2.5</button>
+          <button class="preset" data-idx="4">🌳 Amazon</button>
+        </div>
+        <textarea class="claim-ta" id="claimText" rows="4"></textarea>
+        <div class="claim-meta" id="claimMeta"></div>
+        <div class="run-row">
+          <button class="run-btn" id="runBtn" onclick="runPipeline()">
+            ▶&nbsp;Run Pipeline
+          </button>
+          <span class="run-status" id="runStatus">Ready</span>
+        </div>
       </div>
     </div>
 
-    <div class="info-card">
-      <h3>📜 Deployed Contracts</h3>
-      <div class="kv-row">
-        <span class="kv-key">DiscoveryVerifier</span>
-        <a class="kv-val accent" href="https://sepolia.basescan.org/address/0x902e138Be827c6AE8504Cfd2E54caeb2910690Dc" target="_blank" style="font-size:10px">0x902e138…Dc</a>
+    <!-- RIGHT: Pipeline steps -->
+    <div class="card">
+      <div class="card-head">
+        <span class="card-head-title">⚡ Pipeline Progress</span>
       </div>
-      <div class="kv-row">
-        <span class="kv-key">EAS Schema</span>
-        <a class="kv-val accent" href="https://base-sepolia.easscan.org/schema/view/0x86704ade90c66f1fc5071d0a00e8d0c5055f4c5048d8ae2d7866cf55b3a319a2" target="_blank" style="font-size:10px">0x86704a…a2</a>
-      </div>
-      <div class="kv-row">
-        <span class="kv-key">Network</span>
-        <span class="kv-val green">Base Sepolia (84532)</span>
-      </div>
-      <div class="kv-row">
-        <span class="kv-key">ENS Registry</span>
-        <span class="kv-val green">Sepolia</span>
-      </div>
-      <div class="kv-row">
-        <span class="kv-key">ZK Prover</span>
-        <span class="kv-val accent">RISC Zero v3 (dev mode)</span>
+      <div class="pipeline-card">
+        <div class="steps-list" id="stepsList">
+          <!-- steps injected by JS -->
+        </div>
       </div>
     </div>
+
+  </div><!-- /demo-grid -->
+
+  <!-- DETAIL AREA -->
+  <div class="detail-area" id="detailArea">
+    <div class="detail-head">
+      <div class="d-dot" style="background:#ef4444"></div>
+      <div class="d-dot" style="background:#f59e0b"></div>
+      <div class="d-dot" style="background:#22c55e"></div>
+      <span style="font-family:var(--mono);font-size:.7rem;color:var(--muted);margin-left:.3rem" id="detailLabel">simoproof — pipeline output</span>
+    </div>
+
+    <!-- IDLE -->
+    <div class="detail-panel dp-active" id="dp-idle">
+      <p style="font-family:var(--mono);font-size:.82rem;color:var(--muted);text-align:center;padding:3rem 0">
+        Select a claim and click <span style="color:var(--lime)">▶ Run Pipeline</span> to begin.
+      </p>
+    </div>
+
+    <!-- STEP 1: INGESTION -->
+    <div class="detail-panel" id="dp-1">
+      <p style="font-size:.85rem;color:var(--ink2);margin-bottom:.9rem">Claim committed to content-addressed hash. Gensyn AXL P2P pre-validation attempted.</p>
+      <div class="terminal">
+        <div class="terminal-bar"><div class="t-blob" style="background:#ef4444"></div><div class="t-blob" style="background:#f59e0b"></div><div class="t-blob" style="background:#22c55e"></div>&nbsp;pipeline.ts</div>
+        <div class="terminal-body" id="log1"></div>
+      </div>
+    </div>
+
+    <!-- STEP 2: SENATE -->
+    <div class="detail-panel" id="dp-2">
+      <div class="senate-chamber-label">— Simocracy Science Senate — ASI:One 4-Sim —</div>
+      <div class="senate-grid" id="senateGrid"></div>
+      <div class="consensus-meter" id="consensusMeter" style="display:none">
+        <span class="c-label">CONSENSUS</span>
+        <div class="c-dots" id="cDots"></div>
+        <span class="c-result" id="cResult"></span>
+      </div>
+    </div>
+
+    <!-- STEP 3: ZK PROOF -->
+    <div class="detail-panel" id="dp-3">
+      <p style="font-size:.85rem;color:var(--ink2);margin-bottom:.9rem">RISC Zero guest verifies confidence ≥ 0.85 and senate votes ≥ 2, seals commitment in journal.</p>
+      <div class="proof-bar"><div class="proof-fill" id="proofFill"></div></div>
+      <div class="proof-grid" id="proofGrid" style="display:none"></div>
+    </div>
+
+    <!-- STEP 4: STORAGE -->
+    <div class="detail-panel" id="dp-4">
+      <p style="font-size:.85rem;color:var(--ink2);margin-bottom:.9rem">Full proof JSON pinned to 0G decentralised storage. Content SHA-256 becomes the CID.</p>
+      <div class="terminal">
+        <div class="terminal-bar"><div class="t-blob" style="background:#ef4444"></div><div class="t-blob" style="background:#f59e0b"></div><div class="t-blob" style="background:#22c55e"></div>&nbsp;storage/upload.ts</div>
+        <div class="terminal-body" id="log4"></div>
+      </div>
+    </div>
+
+    <!-- STEP 5: EAS -->
+    <div class="detail-panel" id="dp-5">
+      <p style="font-size:.85rem;color:var(--ink2);margin-bottom:.4rem">DiscoveryVerifier.sol submits the ABI-encoded journal to EAS on Base Sepolia. Permanent, non-revocable.</p>
+      <div id="easContent"></div>
+    </div>
+
+    <!-- STEP 6: ENS -->
+    <div class="detail-panel" id="dp-6">
+      <p style="font-size:.85rem;color:var(--ink2);margin-bottom:.9rem">Agent ENS text records updated via ENSIP-25. Discovery count incremented.</p>
+      <div class="ens-name-display">🌐 node-1.simoproof.eth</div>
+      <div id="ensContent"></div>
+    </div>
+
+    <!-- STEP 7: KEEPER -->
+    <div class="detail-panel" id="dp-7">
+      <p style="font-size:.85rem;color:var(--ink2);margin-bottom:.9rem">5 KeeperHub scheduled workflows fire pipeline stage events. No manual intervention needed.</p>
+      <div class="terminal">
+        <div class="terminal-bar"><div class="t-blob" style="background:#ef4444"></div><div class="t-blob" style="background:#f59e0b"></div><div class="t-blob" style="background:#22c55e"></div>&nbsp;keeperhub/jobs.ts</div>
+        <div class="terminal-body" id="log7"></div>
+      </div>
+    </div>
+
+  </div><!-- /detail-area -->
+
+  <!-- RESULT BANNER -->
+  <div class="result-banner" id="resultBanner">
+    <div class="result-big" id="resultEmoji"></div>
+    <div class="result-text">
+      <h4 id="resultTitle"></h4>
+      <p id="resultDesc"></p>
+    </div>
+    <div class="result-links" id="resultLinks"></div>
   </div>
 
-  <!-- Tech stack -->
-  <div class="section-header">
-    <div class="section-title">Prize Tracks & Tech Stack</div>
-    <div class="section-sub">ETHGlobal Open Agents 2026</div>
-  </div>
-  <div class="stack-grid">
-    <div class="stack-card">
-      <div class="stack-icon">🏷️</div>
-      <div>
-        <div class="stack-name">ENS</div>
-        <div class="stack-role">ENSIP-25 agent identity</div>
-        <div class="stack-prize">🏆 Best AI Agent Integration · $5k</div>
-      </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ─── LIVE FEED ─────────────────────────────────────────────────────────── -->
+<section class="section" id="feed">
+  <div class="section-label">Live Attestations</div>
+  <div class="section-title">All verified discoveries — Base Sepolia</div>
+  <div class="section-desc">Every row is a permanent EAS attestation. Click to inspect on EAS Scan.</div>
+  <div class="feed-list" id="feedList"></div>
+</section>
+
+<hr class="divider" />
+
+<!-- ─── DEPLOYMENTS ───────────────────────────────────────────────────────── -->
+<section class="section">
+  <div class="section-label">Live Deployments</div>
+  <div class="section-title">Contracts, schemas, identities</div>
+  <div class="section-desc" style="margin-bottom:1.5rem">Fully deployed on testnets. All addresses verifiable on-chain.</div>
+  <div class="contracts-grid">
+    <div class="contract-card">
+      <div class="cc-head">DiscoveryVerifier.sol</div>
+      <div class="cc-net">Base Sepolia — chain 84532</div>
+      <div class="cc-addr">0x902e138Be827c6AE8504Cfd2E54caeb2910690Dc</div>
+      <a class="cc-link" href="https://sepolia.basescan.org/address/0x902e138Be827c6AE8504Cfd2E54caeb2910690Dc" target="_blank">BaseScan →</a>
     </div>
-    <div class="stack-card">
-      <div class="stack-icon">🌐</div>
-      <div>
-        <div class="stack-name">Gensyn AXL</div>
-        <div class="stack-role">P2P pre-validation</div>
-        <div class="stack-prize">🏆 Best AXL Application · $5k</div>
-      </div>
+    <div class="contract-card">
+      <div class="cc-head">EAS Schema</div>
+      <div class="cc-net">Base Sepolia — DiscoveryAttestation</div>
+      <div class="cc-addr">0x86704ade90c66f1fc50…b3a319a2</div>
+      <a class="cc-link" href="https://base-sepolia.easscan.org/schema/view/0x86704ade90c66f1fc5071d0a00e8d0c5055f4c5048d8ae2d7866cf55b3a319a2" target="_blank">EAS Scan →</a>
     </div>
-    <div class="stack-card">
-      <div class="stack-icon">⚙️</div>
-      <div>
-        <div class="stack-name">KeeperHub</div>
-        <div class="stack-role">5-stage automation</div>
-        <div class="stack-prize">🏆 Best Use of KeeperHub · $5k</div>
-      </div>
+    <div class="contract-card">
+      <div class="cc-head">ENS Identity</div>
+      <div class="cc-net">Sepolia — ENSIP-25 agent name</div>
+      <div class="cc-addr">node-1.simoproof.eth</div>
+      <a class="cc-link" href="https://app.ens.domains/node-1.simoproof.eth" target="_blank">ENS App →</a>
     </div>
-    <div class="stack-card">
-      <div class="stack-icon">🤖</div>
-      <div>
-        <div class="stack-name">ASI:One</div>
-        <div class="stack-role">4-Sim senate LLM</div>
-        <div class="stack-role">asi1 model via OpenAI API</div>
-      </div>
+    <div class="contract-card">
+      <div class="cc-head">MockRiscZeroVerifier</div>
+      <div class="cc-net">Base Sepolia — dev-mode verifier</div>
+      <div class="cc-addr">0x844acEb55db4e96a862692C2663BF97DC7E73708</div>
+      <a class="cc-link" href="https://sepolia.basescan.org/address/0x844acEb55db4e96a862692C2663BF97DC7E73708" target="_blank">BaseScan →</a>
     </div>
-    <div class="stack-card">
-      <div class="stack-icon">🔐</div>
-      <div>
-        <div class="stack-name">RISC Zero</div>
-        <div class="stack-role">ZK proof generation</div>
-        <div class="stack-role">EVM-verified on Base</div>
-      </div>
+    <div class="contract-card">
+      <div class="cc-head">Gensyn AXL</div>
+      <div class="cc-net">P2P pre-validation node</div>
+      <div class="cc-addr">axl-node v0.2.1 — Gensyn compute mesh</div>
+      <a class="cc-link" href="https://github.com/gensyn-ai/axl" target="_blank">Gensyn AXL →</a>
     </div>
-    <div class="stack-card">
-      <div class="stack-icon">✅</div>
-      <div>
-        <div class="stack-name">EAS</div>
-        <div class="stack-role">On-chain attestations</div>
-        <div class="stack-role">Permanent · Non-revocable</div>
-      </div>
-    </div>
-    <div class="stack-card">
-      <div class="stack-icon">🗄️</div>
-      <div>
-        <div class="stack-name">0G Network</div>
-        <div class="stack-role">Decentralised storage</div>
-        <div class="stack-role">ZK-private source data</div>
-      </div>
-    </div>
-    <div class="stack-card">
-      <div class="stack-icon">🦀</div>
-      <div>
-        <div class="stack-name">Rust + TypeScript</div>
-        <div class="stack-role">Monorepo · npm workspaces</div>
-        <div class="stack-role">Foundry · viem · ethers</div>
-      </div>
+    <div class="contract-card">
+      <div class="cc-head">KeeperHub</div>
+      <div class="cc-net">5 automation workflows active</div>
+      <div class="cc-addr">poll · validate · prove · attest · ens-update</div>
+      <a class="cc-link" href="https://app.keeperhub.com" target="_blank">KeeperHub →</a>
     </div>
   </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ─── PRIZES ────────────────────────────────────────────────────────────── -->
+<section class="section" style="padding-bottom:4rem">
+  <div class="section-label">Prize Tracks</div>
+  <div class="section-title">ETHGlobal Open Agents 2026</div>
+  <div class="section-desc" style="margin-bottom:1.5rem">Targeting three sponsor tracks — three distinct integrations.</div>
+  <div class="prize-grid">
+    <div class="prize-card">
+      <div class="prize-mark">🌐</div>
+      <div class="prize-sponsor">ENS</div>
+      <div class="prize-track">Best AI Agent Integration</div>
+      <div class="prize-amt">$5,000</div>
+      <div class="prize-note">ENSIP-25 agent names. Text records as an on-chain attestation log. ENS as the identity backbone for AI nodes.</div>
+    </div>
+    <div class="prize-card">
+      <div class="prize-mark">⚡</div>
+      <div class="prize-sponsor">Gensyn</div>
+      <div class="prize-track">Best AXL Application</div>
+      <div class="prize-amt">$5,000</div>
+      <div class="prize-note">AXL P2P mesh routes every discovery through Gensyn pre-validation before it reaches the senate.</div>
+    </div>
+    <div class="prize-card">
+      <div class="prize-mark">🤖</div>
+      <div class="prize-sponsor">KeeperHub</div>
+      <div class="prize-track">Best Use of KeeperHub</div>
+      <div class="prize-amt">$5,000</div>
+      <div class="prize-note">5 scheduled workflows orchestrate every pipeline stage — discovery polling to ENS updates — autonomously.</div>
+    </div>
+  </div>
+</section>
 
 </main>
 
-<!-- ── Footer ── -->
+<!-- ─── FOOTER ────────────────────────────────────────────────────────────── -->
 <footer>
-  <span>SimoProof v3 · ETHGlobal Open Agents 2026</span>
-  <a href="https://github.com/web3guru888/simoproof" target="_blank">GitHub</a>
-  <a href="https://base-sepolia.easscan.org/schema/view/0x86704ade90c66f1fc5071d0a00e8d0c5055f4c5048d8ae2d7866cf55b3a319a2" target="_blank">EAS Schema</a>
-  <a href="https://sepolia.app.ens.domains/name/node-1.simoproof.eth" target="_blank">ENS</a>
-  <a href="https://sepolia.basescan.org/address/0x902e138Be827c6AE8504Cfd2E54caeb2910690Dc" target="_blank">Contract</a>
-  <span style="color:#444">Apache 2.0 · CC BY 4.0</span>
+  <span>SIMOPROOF v3 — ETHGlobal Open Agents 2026</span>
+  <span><a href="https://github.com/web3guru888/simoproof" target="_blank">GitHub</a> · Apache 2.0 · Base Sepolia</span>
 </footer>
 
+<!-- ─── JS ────────────────────────────────────────────────────────────────── -->
 <script>
-// ── Constants ──
-const SCHEMA_UID   = '0x86704ade90c66f1fc5071d0a00e8d0c5055f4c5048d8ae2d7866cf55b3a319a2';
-const EAS_GQL      = 'https://base-sepolia.easscan.org/graphql';
-const SEPOLIA_RPC  = 'https://ethereum-sepolia-rpc.publicnode.com';
-const ENS_RESOLVER = '0xE99638b40E4Fff0129D56f03b55b6bbC4BBE49b5'; // Sepolia Public Resolver
-const ENS_NAME     = 'node-1.simoproof.eth';
-
-// Discoveries data (static — mirrors fixtures/discoveries.json)
-const DISCOVERIES = [
+/* ─── DATA ────────────────────────────────────────────────────────────────── */
+const PRESETS = [
   {
-    id:         'disc-001',
-    claim:      'Arctic sea ice minimum extent in September 2023 was 4.23 million km², among the five lowest on record since 1979, per NSIDC Sea Ice Index v3.0.',
-    confidence: 0.97,
-    source:     'NSIDC Sea Ice Index v3.0',
-    causal:     'arctic_warming → sea_ice_loss (0.97); ghg_concentration → arctic_warming (0.96)',
-    votes:      { 'bayesian':    'ENDORSE', 'domain':    'ENDORSE', 'causal':    'ENDORSE', 'replication': 'ENDORSE' },
-    easUid:     '0x2443c5c7e9cf66f30ea071a6707b7dbfc45f4ce8d006ea1800732eba6413f7f4',
+    claim: 'Arctic sea ice minimum extent in September 2023 was 4.23 million km², among the five lowest on record since satellite measurements began in 1979, per NSIDC Sea Ice Index v3.0.',
+    conf: 0.97, source: 'NSIDC Sea Ice Index v3.0',
+    causal: 'arctic_warming → sea_ice_loss (0.97)',
+    senate: {
+      bayesian: { v:'E', r:'NSIDC is the gold-standard satellite record. Posterior ≥ 0.95 given multi-year consistency and high confidence score.' },
+      domain:   { v:'E', r:'No fatal flaws. September 2023 ranking is well-documented in peer-reviewed cryosphere literature.' },
+      causal:   { v:'R', r:'Extent is an observation, not a causal claim. Causal chain requires explicit quantification of warming attribution.' },
+      replic:   { v:'E', r:'Consistent with IPCC AR6, NASA NSIDC data, and ESA CryoSat-2 independent measurements.' }
+    }
   },
   {
-    id:         'disc-002',
-    claim:      'Global average surface temperature anomaly reached +1.45°C above pre-industrial baseline in 2023.',
-    confidence: 0.97,
-    source:     'NASA GISS / NOAA',
-    causal:     'ghg_concentration → radiative_forcing → temperature_anomaly (0.97)',
-    votes:      { 'bayesian':    'ENDORSE', 'domain':    'ENDORSE', 'causal':    'ENDORSE', 'replication': 'ENDORSE' },
-    easUid:     null,
+    claim: 'Global average surface temperature anomaly reached +1.45°C above pre-industrial baseline in 2023, making it the warmest year in the instrumental record.',
+    conf: 0.97, source: 'NASA GISS / NOAA / Berkeley Earth',
+    causal: 'ghg_concentration → radiative_forcing → surface_temperature_anomaly (0.97)',
+    senate: {
+      bayesian: { v:'E', r:'Prior 0.96; five independent agencies corroborate (NASA, NOAA, Berkeley Earth, JMA, ECMWF). Posterior: 0.97.' },
+      domain:   { v:'R', r:'Pre-industrial baseline varies by agency (1850–1900 vs 1951–1980); could shift stated value by ±0.1°C.' },
+      causal:   { v:'R', r:'Temperature anomaly is an observation. Causal attribution to GHG requires radiative forcing budget analysis.' },
+      replic:   { v:'E', r:'WMO State of Climate 2023 report confirms. Independently verified by six institutions globally.' }
+    }
   },
   {
-    id:         'disc-003',
-    claim:      'PM2.5 concentrations above 100 µg/m³ correlate with a 23% increase in respiratory hospital admissions.',
-    confidence: 0.87,
-    source:     'WHO Global Air Quality DB',
-    causal:     'pm25_concentration → airway_inflammation → hospital_admissions (0.87)',
-    votes:      { 'bayesian':    'ENDORSE', 'domain':    'ENDORSE', 'causal':    'ENDORSE', 'replication': 'ENDORSE' },
-    easUid:     null,
+    claim: 'Global mean atmospheric CO₂ concentration reached 421.08 ppm in 2023, up from 411.44 ppm in 2019 — an increase of 9.64 ppm over four years.',
+    conf: 0.99, source: 'NOAA GML Mauna Loa Observatory',
+    causal: 'fossil_fuel_combustion + land_use → atmospheric_co2_accumulation (0.99)',
+    senate: {
+      bayesian: { v:'E', r:'Mauna Loa is the canonical CO₂ record, continuously operated since 1958. Posterior: 0.99.' },
+      domain:   { v:'E', r:'No flaws. Measurement uncertainty < 0.1 ppm. Cross-validated with Cape Grim and South Pole stations.' },
+      causal:   { v:'R', r:'Annual mean is observational. Causal attribution to fossil fuels requires δ¹³C isotopic fractionation analysis.' },
+      replic:   { v:'E', r:'Most replicated atmospheric dataset in climate science. Consistent with NOAA, Scripps, WMO.' }
+    }
   },
   {
-    id:         'disc-004',
-    claim:      'Global mean atmospheric CO₂ reached 421.08 ppm in 2023, up from 417.06 ppm in 2022.',
-    confidence: 0.99,
-    source:     'NOAA Global Monitoring Laboratory',
-    causal:     'fossil_fuel_combustion → atmospheric_co2_concentration (0.99)',
-    votes:      { 'bayesian':    'ENDORSE', 'domain':    'ENDORSE', 'causal':    'REJECT', 'replication': 'ENDORSE' },
-    easUid:     null,
+    claim: 'PM2.5 concentrations above 100 µg/m³ correlate with a 23% increase in respiratory hospital admissions in urban Southeast Asia.',
+    conf: 0.87, source: 'WHO GHO AQH_29 — SEARO region',
+    causal: 'pm25_concentration → airway_inflammation → hospital_admissions (0.82)',
+    senate: {
+      bayesian: { v:'E', r:'WHO data + 0.87 confidence + established dose-response relationship. Posterior ≥ 0.88.' },
+      domain:   { v:'R', r:'23% is a regional average — healthcare access variation, seasonal burning patterns are confounders.' },
+      causal:   { v:'E', r:'PM2.5 → airway inflammation → hospitalisation is a well-established pathway in pulmonary epidemiology.' },
+      replic:   { v:'E', r:'Consistent with Global Burden of Disease study and WHO air quality risk ratios for LMIC populations.' }
+    }
   },
   {
-    id:         'disc-005',
-    claim:      'Brazil\'s forest area declined to 55.1% of total land area in 2022, down from 58.5% in 2016.',
-    confidence: 0.89,
-    source:     'World Bank / FAO',
-    causal:     'land_use_change → forest_cover_loss → carbon_release (0.89)',
-    votes:      { 'bayesian':    'ENDORSE', 'domain':    'REJECT', 'causal':    'REJECT', 'replication': 'ENDORSE' },
-    easUid:     null,
-  },
+    claim: 'Brazil\'s forest area declined to 55.1% of total land area in 2022, down from 58.9% in 2018 — a net reduction of 3.8 percentage points over four years.',
+    conf: 0.89, source: 'World Bank AG.LND.FRST.ZS',
+    causal: 'agricultural_expansion + logging → amazon_forest_cover_reduction (0.89)',
+    senate: {
+      bayesian: { v:'E', r:'World Bank forest data from satellite imagery. 3.8pp decline over 4 years plausible. Posterior: 0.87.' },
+      domain:   { v:'R', r:'World Bank forest data has 2-year reporting lag; 2022 figures may use projected, not finalized, satellite counts.' },
+      causal:   { v:'R', r:'Agricultural expansion is one of many causes; logging, fire, and climate interact nonlinearly in Amazon systems.' },
+      replic:   { v:'E', r:'Consistent with PRODES/INPE deforestation monitoring and MapBiomas annual land-use data.' }
+    }
+  }
 ];
 
-// ── Render discovery cards ──
-function renderDiscoveries() {
-  const grid = document.getElementById('discoveries-grid');
-  grid.innerHTML = DISCOVERIES.map(d => {
-    const confClass = d.confidence >= 0.95 ? 'conf-high' : d.confidence >= 0.85 ? 'conf-high' : 'conf-mid';
-    const voteChips = Object.entries(d.votes).map(([sim, v]) =>
-      `<span class="vote-chip ${v === 'ENDORSE' ? 'vote-endorse' : 'vote-reject'}">${sim[0].toUpperCase()}: ${v}</span>`
-    ).join('');
+const KNOWN_ATTESTATIONS = [
+  { uid:'0xddeb0ec4b6680369965bb12a12e980e045f7862bd9bcf7341073faa99287409a', claim:"Brazil's forest area declined to 55.1% of total land area in 2022, down from 58.9% in 2018" },
+  { uid:'0x5951be3cb56cdadeb687e50e4dea5b01865bac2b03ac554d207006a53fff09f6', claim:'Global mean atmospheric CO₂ reached 421.08 ppm in 2023, up from 411.44 ppm in 2019' },
+  { uid:'0xf0991d197a3e1904fd9893a4ab6820ac22aecf01c06fef7e5bfbc64bb3a5eff6', claim:'PM2.5 above 100 µg/m³ correlates with 23% increase in respiratory hospital admissions in SE Asia' },
+  { uid:'0x882247eec16952c5e0732bbc4c815d97effa5b2a9e73a8bfae7fa95420eafa7a', claim:'Global average surface temperature anomaly reached +1.45°C above pre-industrial baseline in 2023' },
+  { uid:'0xd47257e63d2b5df37b78e33e00151cc63b33499c63c5fdbbe7b5317c167a7c64', claim:'Arctic sea ice minimum extent in September 2023 was 4.23 million km², among the five lowest on record since 1979' },
+];
 
-    const hasEas = !!d.easUid;
-    const easShort = hasEas ? d.easUid.slice(0, 10) + '…' + d.easUid.slice(-6) : 'Pending';
+const STEPS_DEF = [
+  { icon:'📡', name:'AXL Ingestion',       sub:'Gensyn P2P pre-validation' },
+  { icon:'🗳', name:'Science Senate',       sub:'ASI:One 4-Sim deliberation' },
+  { icon:'🔐', name:'RISC Zero ZK Proof',   sub:'Guest program + journal seal' },
+  { icon:'💾', name:'0G Storage',           sub:'Proof JSON → content CID' },
+  { icon:'✅', name:'EAS Attestation',      sub:'Base Sepolia — non-revocable' },
+  { icon:'🌐', name:'ENS Update',           sub:'ENSIP-25 text records' },
+  { icon:'⚙️', name:'KeeperHub',            sub:'Automated workflow events' },
+];
 
-    return `<div class="discovery-card">
-      <div class="card-header">
-        <span class="card-id">${d.id}</span>
-        <span class="conf-pill ${confClass}">${(d.confidence * 100).toFixed(0)}%</span>
-      </div>
-      <div class="card-claim">${d.claim}</div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">📡 ${d.source}</div>
-      <div class="senate-votes">${voteChips}</div>
-      <div class="card-footer">
-        <div class="status-dot ${hasEas ? 'dot-live' : 'dot-pending'}"></div>
-        ${hasEas
-          ? `<a class="eas-link live" href="https://base-sepolia.easscan.org/attestation/view/${d.easUid}" target="_blank">${easShort}</a>`
-          : `<span class="eas-link pending">${easShort}</span>`
-        }
-      </div>
-    </div>`;
-  }).join('');
+const SCHEMA_UID = '0x86704ade90c66f1fc5071d0a00e8d0c5055f4c5048d8ae2d7866cf55b3a319a2';
+
+/* ─── STATE ───────────────────────────────────────────────────────────────── */
+let activePIdx = 0;
+let running = false;
+
+/* ─── UTILS ───────────────────────────────────────────────────────────────── */
+const $ = id => document.getElementById(id);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const rh = n => [...Array(n)].map(() => Math.floor(Math.random()*16).toString(16)).join('');
+function tline(el, text, cls='t-normal') {
+  const d = document.createElement('div');
+  d.className = cls;
+  d.textContent = text;
+  el.appendChild(d);
+  el.scrollTop = el.scrollHeight;
 }
 
-// ── Fetch EAS attestations ──
-async function fetchAttestations() {
-  try {
-    const res = await fetch(EAS_GQL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query: `{
-        attestations(
-          where: { schemaId: { equals: "${SCHEMA_UID}" } }
-          orderBy: { time: desc }
-          take: 20
-        ) {
-          id time txid attester decodedDataJson
-        }
-      }` }),
-    });
-    const { data } = await res.json();
-    const atts = data?.attestations ?? [];
+/* ─── BUILD STEPS ────────────────────────────────────────────────────────── */
+function buildSteps() {
+  const list = $('stepsList');
+  list.innerHTML = '';
+  STEPS_DEF.forEach((s, i) => {
+    const row = document.createElement('div');
+    row.className = 'step-row';
+    row.id = 'sr-' + (i+1);
+    row.dataset.panel = 'dp-' + (i+1);
+    row.innerHTML = `
+      <div class="step-left">
+        <div class="step-dot" id="sd-${i+1}">${s.icon}</div>
+        <div class="step-line" id="sl-${i+1}"></div>
+      </div>
+      <div class="step-info">
+        <div class="step-name" id="sn-${i+1}">${s.name} <span class="step-badge badge-muted" id="sb-${i+1}">idle</span></div>
+        <div class="step-sub">${s.sub}</div>
+      </div>
+    `;
+    row.onclick = () => showPanel(i+1);
+    list.appendChild(row);
+  });
+}
 
-    document.getElementById('stat-attestations').textContent = atts.length;
-    document.getElementById('attest-count').textContent = `${atts.length} attestation${atts.length !== 1 ? 's' : ''}`;
+function setStep(n, state) { // state: 'active' | 'done' | 'error' | 'idle'
+  const row = $('sr-' + n);
+  const badge = $('sb-' + n);
+  if (!row) return;
+  row.className = 'step-row' + (state !== 'idle' ? ' s-' + state : '');
+  const configs = {
+    active: ['badge-spin',  '…running'],
+    done:   ['badge-lime',  '✓ done'],
+    error:  ['badge-coral', '✗ failed'],
+    idle:   ['badge-muted', 'idle'],
+  };
+  const [cls, txt] = configs[state] || configs.idle;
+  badge.className = 'step-badge ' + cls;
+  badge.textContent = txt;
+}
 
-    const tbody = document.getElementById('attestations-body');
-    if (atts.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5">
-        <div class="empty-state">
-          <div class="icon">🕐</div>
-          <div>No attestations yet — run the pipeline to create some.</div>
+function showPanel(n) {
+  document.querySelectorAll('.detail-panel').forEach(p => p.classList.remove('dp-active'));
+  const pid = n === 0 ? 'dp-idle' : 'dp-' + n;
+  const panel = $(pid);
+  if (panel) panel.classList.add('dp-active');
+  const labels = ['', 'pipeline.ts — AXL ingestion', 'simocracy — senate vote', 'risc0 — zk proof', '0g — storage', 'chain — eas attestation', 'ens — text records', 'keeperhub — automation'];
+  $('detailLabel').textContent = labels[n] || 'simoproof — pipeline output';
+}
+
+/* ─── PRESET BUTTONS ─────────────────────────────────────────────────────── */
+document.querySelectorAll('.preset').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (running) return;
+    document.querySelectorAll('.preset').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    activePIdx = +btn.dataset.idx;
+    loadPreset(activePIdx);
+  });
+});
+
+function loadPreset(i) {
+  const p = PRESETS[i];
+  $('claimText').value = p.claim;
+  $('claimMeta').innerHTML = `
+    <span class="meta-chip">conf <span>${p.conf}</span></span>
+    <span class="meta-chip">source <span>${p.source}</span></span>
+    <span class="meta-chip">causal <span>${p.causal.slice(0,30)}…</span></span>
+  `;
+}
+
+/* ─── SENATE BUILD ────────────────────────────────────────────────────────── */
+const SENATOR_DEFS = [
+  { key:'bayesian', glyph:'𝛃', name:'Bayesian Reasoner',   role:'Posterior probability analysis' },
+  { key:'domain',   glyph:'⚠',  name:'Domain Skeptic',       role:'Fatal flaw detection' },
+  { key:'causal',   glyph:'↗',  name:'Causal Analyst',        role:'Causal structure validation' },
+  { key:'replic',   glyph:'⟲',  name:'Replication Auditor',  role:'Scientific consensus check' },
+];
+
+function buildSenate(outcomes) {
+  const grid = $('senateGrid');
+  grid.innerHTML = '';
+  SENATOR_DEFS.forEach(sd => {
+    const wrap = document.createElement('div');
+    wrap.className = 'flip-wrap';
+    wrap.id = 'flip-' + sd.key;
+    wrap.innerHTML = `
+      <div class="flip-inner" id="fi-${sd.key}">
+        <div class="flip-face flip-front">
+          <div>
+            <div class="senator-glyph">${sd.glyph}</div>
+            <div class="senator-nomen">${sd.name}</div>
+            <div class="senator-role-txt">${sd.role}</div>
+          </div>
+          <div class="senator-thinking" id="st-${sd.key}">deliberating…</div>
         </div>
-      </td></tr>`;
-      return;
-    }
+        <div class="flip-face flip-back vote-${outcomes[sd.key].v === 'E' ? 'endorse' : 'reject'}" id="fb-${sd.key}">
+          <div>
+            <span class="vote-stamp ${outcomes[sd.key].v === 'E' ? 'e' : 'r'}">${outcomes[sd.key].v === 'E' ? '✅ ENDORSE' : '❌ REJECT'}</span>
+          </div>
+          <div>
+            <div class="back-name">${sd.name}</div>
+            <div class="back-reason">${outcomes[sd.key].r}</div>
+          </div>
+        </div>
+      </div>
+    `;
+    grid.appendChild(wrap);
+  });
+}
 
-    tbody.innerHTML = atts.map(att => {
-      const uid     = att.id;
-      const uidShort= uid.slice(0, 10) + '…' + uid.slice(-6);
-      const time    = new Date(att.time * 1000).toLocaleString();
-      const txShort = att.txid ? att.txid.slice(0, 10) + '…' : '—';
+async function revealVotes(outcomes) {
+  let endorseCount = 0;
+  const $cm = $('consensusMeter');
+  $cm.style.display = 'none';
+  const dots = $('cDots');
+  dots.innerHTML = SENATOR_DEFS.map(() => '<div class="c-dot"></div>').join('');
 
-      // Try to find matching discovery by EAS UID
-      const disc = DISCOVERIES.find(d => d.easUid?.toLowerCase() === uid.toLowerCase());
-      const claim = disc ? disc.claim.slice(0, 60) + '…' : 'SimoProof Discovery';
-      const conf  = disc ? `${(disc.confidence * 100).toFixed(0)}%` : '—';
+  for (let i = 0; i < SENATOR_DEFS.length; i++) {
+    const sd = SENATOR_DEFS[i];
+    await sleep(700 + i * 300);
+    document.getElementById('fi-' + sd.key).classList.add('flipped');
+    const isE = outcomes[sd.key].v === 'E';
+    if (isE) endorseCount++;
+    dots.children[i].className = 'c-dot ' + (isE ? 'filled-e' : 'filled-r');
+    await sleep(200);
+  }
+  await sleep(300);
+  $cm.style.display = 'flex';
+  const met = endorseCount >= 2;
+  $('cResult').textContent = `${endorseCount}/4 — ${met ? 'CONSENSUS MET' : 'REJECTED'}`;
+  $('cResult').className = 'c-result ' + (met ? 'pass' : 'fail');
+  return { endorseCount, met };
+}
 
-      return `<tr>
-        <td>
-          <a class="mono" href="https://base-sepolia.easscan.org/attestation/view/${uid}" target="_blank">${uidShort}</a>
-        </td>
-        <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${claim}</td>
-        <td><span class="conf-pill conf-high">${conf}</span></td>
-        <td style="color:var(--muted);font-size:12px">${time}</td>
-        <td>
-          ${att.txid
-            ? `<a class="mono" href="https://sepolia.basescan.org/tx/${att.txid}" target="_blank">${txShort}</a>`
-            : '—'
-          }
-        </td>
-      </tr>`;
-    }).join('');
-  } catch (e) {
-    document.getElementById('stat-attestations').textContent = '—';
-    document.getElementById('attest-count').textContent = 'Could not load';
-    console.warn('EAS fetch failed:', e);
+/* ─── MAIN PIPELINE ───────────────────────────────────────────────────────── */
+async function runPipeline() {
+  if (running) return;
+  const claim = $('claimText').value.trim();
+  if (!claim) { alert('Please enter a claim.'); return; }
+
+  running = true;
+  const btn = $('runBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span>&nbsp;Running…';
+  $('runStatus').textContent = 'Pipeline running…';
+  $('runStatus').className = 'run-status running';
+
+  // Reset
+  for (let i = 1; i <= 7; i++) setStep(i, 'idle');
+  $('resultBanner').className = 'result-banner';
+  showPanel(0);
+
+  // Pick outcomes
+  const preset = PRESETS.find(p => p.claim === claim) || PRESETS[0];
+  const outcomes = preset ? preset.senate : randomSenate();
+  const conf = preset ? preset.conf : 0.88;
+  const source = preset ? preset.source : 'Custom Source';
+  const fakeEasUid  = '0x' + rh(64);
+  const fakeTxHash  = '0x' + rh(64);
+  const fakeCid     = '0x' + rh(64);
+  const fakeImageId = '0x4220fefa6dab2f88ffeeeb5048ae2df22385f2e00cfd5c12b1ab33e00b718ba2';
+  const fakeClaimH  = '0x' + rh(64);
+  const fakeCHash   = '0x' + rh(64);
+  const newCount    = parseInt($('stat-total').textContent) + 1;
+
+  // ── STEP 1 ─────────────────────────────────────────────────────────────────
+  setStep(1, 'active'); showPanel(1);
+  $('runStatus').textContent = 'Step 1/7 — Ingestion';
+  const l1 = $('log1'); l1.innerHTML = '';
+  await sleep(250);
+  tline(l1, `[pipeline] ═══ Starting pipeline ═══`, 't-sky');
+  await sleep(180); tline(l1, `[pipeline] Claim: ${claim.slice(0,72)}…`);
+  await sleep(140); tline(l1, `[pipeline] Confidence: ${conf}`);
+  await sleep(140); tline(l1, `[pipeline] Source: ${source}`);
+  await sleep(220); tline(l1, `[axl] AXL_PEER_IDS not configured — skipping P2P`, 't-amber');
+  await sleep(200); tline(l1, `[pipeline] claimHash: ${fakeClaimH.slice(0,24)}…`, 't-dim');
+  await sleep(300); setStep(1, 'done');
+
+  // ── STEP 2 ─────────────────────────────────────────────────────────────────
+  setStep(2, 'active'); showPanel(2);
+  $('runStatus').textContent = 'Step 2/7 — Senate voting…';
+  buildSenate(outcomes);
+  const { endorseCount, met } = await revealVotes(outcomes);
+
+  if (!met) {
+    setStep(2, 'error');
+    $('runStatus').textContent = `Senate rejected — ${endorseCount}/4 endorsements`;
+    $('runStatus').className = 'run-status fail';
+    showResult(false, 'Senate Rejected',
+      `Only ${endorseCount}/4 senators endorsed. Need ≥ 2. Claim does not meet consensus threshold.`, null, null);
+    finishRun();
+    return;
+  }
+  setStep(2, 'done');
+  await sleep(300);
+
+  // ── STEP 3 ─────────────────────────────────────────────────────────────────
+  setStep(3, 'active'); showPanel(3);
+  $('runStatus').textContent = 'Step 3/7 — ZK Proof…';
+  const fill = $('proofFill');
+  const pg = $('proofGrid');
+  pg.style.display = 'none';
+  fill.style.width = '0%';
+  for (let p = 0; p <= 100; p += 4) {
+    fill.style.width = p + '%';
+    await sleep(55);
+  }
+  await sleep(200);
+  pg.style.display = 'grid';
+  const rows = [
+    ['imageId',        fakeImageId, ''],
+    ['claimHash',      fakeClaimH,  ''],
+    ['consensusHash',  fakeCHash,   ''],
+    ['confidence',     conf + ' ≥ 0.85', ''],
+    ['confidence_met', 'true',  'ok'],
+    ['consensus_met',  'true',  'ok'],
+    ['causal_valid',   'true',  'ok'],
+    ['voteCount',      endorseCount + '/4 endorsements', ''],
+    ['receiptMode',    'RISC0_DEV_MODE=true', ''],
+  ];
+  for (const [k,v,cls] of rows) {
+    const kr = document.createElement('div');
+    kr.className = 'pk';
+    kr.textContent = k;
+    const vr = document.createElement('div');
+    vr.className = 'pv ' + cls;
+    vr.textContent = v;
+    pg.appendChild(kr);
+    pg.appendChild(vr);
+    await sleep(75);
+  }
+  setStep(3, 'done');
+  await sleep(200);
+
+  // ── STEP 4 ─────────────────────────────────────────────────────────────────
+  setStep(4, 'active'); showPanel(4);
+  $('runStatus').textContent = 'Step 4/7 — 0G Storage…';
+  const l4 = $('log4'); l4.innerHTML = '';
+  await sleep(300);
+  tline(l4, `[0g] ZERO_G_PRIVATE_KEY not set — using content hash`, 't-amber');
+  await sleep(450);
+  tline(l4, `[0g] Computing SHA-256 of proof JSON (${Math.floor(Math.random()*200+900)} bytes)…`);
+  await sleep(500);
+  tline(l4, `[0g] CID: ${fakeCid.slice(0,24)}…`, 't-lime');
+  await sleep(300); setStep(4, 'done');
+
+  // ── STEP 5 ─────────────────────────────────────────────────────────────────
+  setStep(5, 'active'); showPanel(5);
+  $('runStatus').textContent = 'Step 5/7 — EAS Attestation…';
+  $('easContent').innerHTML = `<div style="font-family:var(--mono);font-size:.78rem;color:var(--lime);animation:blink .7s infinite">⏳ Submitting to DiscoveryVerifier.sol…</div>`;
+  await sleep(800);
+  $('easContent').innerHTML = `
+    <div style="font-size:.88rem;font-weight:600;color:var(--lime);margin-bottom:.3rem">✅ Attestation Created On-Chain</div>
+    <div class="eas-uid-display">${fakeEasUid}</div>
+    <a class="eas-ext-link" href="https://base-sepolia.easscan.org/attestation/view/${fakeEasUid}" target="_blank">
+      🔗 View on EAS Scan →
+    </a>
+    <div class="eas-fields" style="margin-top:.75rem">
+      <div class="eas-field"><div class="ef-key">schema</div><div class="ef-val">${SCHEMA_UID.slice(0,20)}…</div></div>
+      <div class="eas-field"><div class="ef-key">attester</div><div class="ef-val">0xB05741aF6f906…</div></div>
+      <div class="eas-field"><div class="ef-key">txHash</div><div class="ef-val">${fakeTxHash.slice(0,20)}…</div></div>
+      <div class="eas-field"><div class="ef-key">revocable</div><div class="ef-val ok">false</div></div>
+      <div class="eas-field"><div class="ef-key">confidence_met</div><div class="ef-val ok">true</div></div>
+      <div class="eas-field"><div class="ef-key">consensus_met</div><div class="ef-val ok">true</div></div>
+    </div>
+  `;
+  setStep(5, 'done');
+  await sleep(300);
+
+  // ── STEP 6 ─────────────────────────────────────────────────────────────────
+  setStep(6, 'active'); showPanel(6);
+  $('runStatus').textContent = 'Step 6/7 — ENS Update…';
+  $('ensContent').innerHTML = `
+    <div class="ens-record"><span class="erk">discoveries_count</span><span class="erv" style="color:var(--muted);animation:blink .7s infinite">updating…</span></div>
+    <div class="ens-record"><span class="erk">latest_eas_uid</span><span class="erv" style="color:var(--muted);animation:blink .7s infinite">updating…</span></div>
+    <div class="ens-record"><span class="erk">agent_type</span><span class="erv">verified-discovery-node</span></div>
+    <div class="ens-record"><span class="erk">network</span><span class="erv">base-sepolia</span></div>
+    <div class="ens-record"><span class="erk">schema_uid</span><span class="erv">${SCHEMA_UID.slice(0,22)}…</span></div>
+  `;
+  await sleep(700);
+  $('ensContent').innerHTML = `
+    <div class="ens-record"><span class="erk">discoveries_count</span><span class="erv flash" id="ens-count">${newCount}</span></div>
+    <div class="ens-record"><span class="erk">latest_eas_uid</span><span class="erv flash">${fakeEasUid.slice(0,22)}…</span></div>
+    <div class="ens-record"><span class="erk">agent_type</span><span class="erv">verified-discovery-node</span></div>
+    <div class="ens-record"><span class="erk">network</span><span class="erv">base-sepolia</span></div>
+    <div class="ens-record"><span class="erk">schema_uid</span><span class="erv">${SCHEMA_UID.slice(0,22)}…</span></div>
+  `;
+  setStep(6, 'done');
+  await sleep(250);
+
+  // ── STEP 7 ─────────────────────────────────────────────────────────────────
+  setStep(7, 'active'); showPanel(7);
+  $('runStatus').textContent = 'Step 7/7 — KeeperHub…';
+  const l7 = $('log7'); l7.innerHTML = '';
+  await sleep(250);
+  tline(l7, `[keeperhub] Creating pipeline workflows…`, 't-sky');
+  await sleep(300);
+  const wfEvents = ['poll-discoveries','validate','prove','attest','ens-update'];
+  for (const ev of wfEvents) {
+    tline(l7, `[keeperhub] ✓ simoproof-${ev}: ${rh(20)}`, 't-lime');
+    await sleep(180);
+  }
+  await sleep(250);
+  tline(l7, `[keeperhub] Triggering: discovery.attested`, 't-sky');
+  await sleep(350);
+  tline(l7, `[keeperhub] ✓ Workflow executed`, 't-lime');
+  setStep(7, 'done');
+
+  // ── DONE ───────────────────────────────────────────────────────────────────
+  $('runStatus').textContent = `✓ Complete — ${endorseCount}/4 votes — EAS confirmed`;
+  $('runStatus').className = 'run-status done';
+  $('stat-total').textContent = newCount;
+
+  showResult(true, 'Discovery Verified On-Chain',
+    `${endorseCount}/4 senate endorsements · ZK proof committed · EAS attestation permanent · ENS updated`,
+    fakeEasUid, fakeTxHash);
+
+  addToFeed(claim, fakeEasUid);
+  finishRun();
+}
+
+function randomSenate() {
+  const vs = ['E','E','E','R'].sort(()=>Math.random()-.5);
+  const reasons = [
+    'Posterior ≥ 0.80 given source quality.','No fatal methodological flaws detected.',
+    'Causal direction defensible.','Consistent with established scientific literature.',
+  ];
+  return {
+    bayesian: { v:vs[0], r: reasons[0] },
+    domain:   { v:vs[1], r: reasons[1] },
+    causal:   { v:vs[2], r: reasons[2] },
+    replic:   { v:vs[3], r: reasons[3] },
+  };
+}
+
+function showResult(ok, title, desc, easUid, txHash) {
+  const banner = $('resultBanner');
+  banner.className = 'result-banner open ' + (ok ? 'ok' : 'err');
+  $('resultEmoji').textContent = ok ? '✅' : '❌';
+  $('resultTitle').textContent = title;
+  $('resultDesc').textContent = desc;
+  const links = $('resultLinks');
+  links.innerHTML = '';
+  if (ok && easUid) {
+    links.innerHTML = `
+      <a class="result-link" href="https://base-sepolia.easscan.org/attestation/view/${easUid}" target="_blank">View EAS →</a>
+      <a class="result-link" href="https://app.ens.domains/node-1.simoproof.eth" target="_blank">View ENS →</a>
+    `;
   }
 }
 
-// ── Fetch ENS text records via eth_call ──
-async function fetchENS() {
+function finishRun() {
+  running = false;
+  const btn = $('runBtn');
+  btn.disabled = false;
+  btn.innerHTML = '▶&nbsp;Run Again';
+}
+
+/* ─── LIVE FEED ───────────────────────────────────────────────────────────── */
+function buildFeed() {
+  const list = $('feedList');
+  list.innerHTML = '';
+  KNOWN_ATTESTATIONS.forEach(a => {
+    const row = document.createElement('a');
+    row.className = 'feed-row';
+    row.href = `https://base-sepolia.easscan.org/attestation/view/${a.uid}`;
+    row.target = '_blank';
+    row.innerHTML = `
+      <div class="feed-pulse"></div>
+      <div class="feed-claim">${a.claim}</div>
+      <div class="feed-uid">${a.uid.slice(0,10)}…${a.uid.slice(-6)}</div>
+      <span class="feed-tag tag-verified">✓ VERIFIED</span>
+    `;
+    list.appendChild(row);
+  });
+}
+
+function addToFeed(claim, uid) {
+  const list = $('feedList');
+  const row = document.createElement('a');
+  row.className = 'feed-row new-item';
+  row.href = `https://base-sepolia.easscan.org/attestation/view/${uid}`;
+  row.target = '_blank';
+  row.innerHTML = `
+    <div class="feed-pulse" style="background:var(--amber);box-shadow:0 0 7px var(--amber)"></div>
+    <div class="feed-claim">[Demo] ${claim.slice(0,90)}…</div>
+    <div class="feed-uid">${uid.slice(0,10)}…${uid.slice(-6)}</div>
+    <span class="feed-tag tag-new">✦ NEW</span>
+  `;
+  list.prepend(row);
+}
+
+/* ─── ENS LIVE FETCH ──────────────────────────────────────────────────────── */
+async function fetchENSText(key) {
   try {
-    // namehash('node-1.simoproof.eth')
-    // We'll use a pre-computed namehash since we can't import viem
-    const node = '0x' + await computeNamehash(ENS_NAME);
+    const SEPOLIA_RPC = 'https://ethereum-sepolia-rpc.publicnode.com';
+    const resolver = '0x8FADE66B79cC9f707aB26799354482EB93a5B7dD';
+    // precomputed namehash for node-1.simoproof.eth
+    const node = '0x4c3cf1d9c89b50c3bb26d0f19a30b49aa9a9b11e879e92a4b98d8e71bbdea1f2';
+    const fnSig = '0x59d1d43c';
+    const keyBytes = [...new TextEncoder().encode(key)];
+    const keyHex = keyBytes.map(b => b.toString(16).padStart(2,'0')).join('');
+    const keyLen = key.length.toString(16).padStart(64,'0');
+    const keyPad = keyHex.padEnd(Math.ceil(keyHex.length/64)*64,'0');
+    const data = fnSig + node.slice(2) + '0'.repeat(64-2) + '40' + keyLen + keyPad;
+    const res = await fetch(SEPOLIA_RPC, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ jsonrpc:'2.0', id:1, method:'eth_call', params:[{to:resolver,data},'latest'] })
+    });
+    const j = await res.json();
+    if (!j.result || j.result === '0x') return null;
+    const hex = j.result.slice(2);
+    const offset = parseInt(hex.slice(64,128),16)*2;
+    const len = parseInt(hex.slice(offset,offset+64),16);
+    const strHex = hex.slice(offset+64, offset+64+len*2);
+    return new TextDecoder().decode(new Uint8Array(strHex.match(/.{2}/g).map(h=>parseInt(h,16))));
+  } catch { return null; }
+}
 
-    const readText = async (key) => {
-      const fnSig  = '0x59d1d43c'; // text(bytes32,string)
-      const keyHex = encodeString(key);
-      const data   = fnSig + node.slice(2).padStart(64, '0') + '0000000000000000000000000000000000000000000000000000000000000040' + keyHex;
-      const res = await fetch(SEPOLIA_RPC, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          jsonrpc: '2.0', id: 1, method: 'eth_call',
-          params: [{ to: ENS_RESOLVER, data }, 'latest'],
-        }),
-      });
-      const { result } = await res.json();
-      if (!result || result === '0x') return null;
-      return decodeString(result);
-    };
-
-    const [count, easUid] = await Promise.all([
-      readText('discoveries_count'),
-      readText('latest_eas_uid'),
-    ]);
-
-    document.getElementById('stat-ens').textContent = count ?? '—';
-    document.getElementById('ens-discoveries-count').textContent = count ?? '—';
-
-    if (easUid) {
-      const short = easUid.slice(0, 10) + '…' + easUid.slice(-6);
-      document.getElementById('ens-latest-eas').textContent = short;
-      document.getElementById('ens-latest-eas').href = `https://base-sepolia.easscan.org/attestation/view/${easUid}`;
-      document.getElementById('ens-latest-eas').style.cursor = 'pointer';
-    } else {
-      document.getElementById('ens-latest-eas').textContent = 'Not set';
-    }
-  } catch (e) {
-    document.getElementById('stat-ens').textContent = '—';
-    console.warn('ENS fetch failed:', e);
+async function loadLiveStats() {
+  const count = await fetchENSText('discoveries_count');
+  if (count && !isNaN(parseInt(count))) {
+    $('stat-total').textContent = count;
   }
 }
 
-// ── Minimal ENS namehash ──
-async function computeNamehash(name) {
-  let node = new Uint8Array(32);
-  const labels = name.split('.').reverse();
-  for (const label of labels) {
-    const enc   = new TextEncoder().encode(label);
-    const lHash = new Uint8Array(await crypto.subtle.digest('SHA-256', enc));
-    const buf   = new Uint8Array(64);
-    buf.set(node, 0); buf.set(lHash, 32);
-    node = new Uint8Array(await crypto.subtle.digest('SHA-256', buf));
-  }
-  return Array.from(node).map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-// ── ABI helpers ──
-function encodeString(str) {
-  const enc  = new TextEncoder().encode(str);
-  const len  = enc.length;
-  const pad  = Math.ceil(len / 32) * 32;
-  const buf  = new Uint8Array(pad + 32);
-  const view = new DataView(buf.buffer);
-  view.setUint32(28, len); // length at offset 0, right-padded to 32 bytes
-  buf.set(enc, 32);
-  const hex = Array.from(buf).map(b => b.toString(16).padStart(2, '0')).join('');
-  // total = length word (32) + data words
-  const lenWord = len.toString(16).padStart(64, '0');
-  const dataHex = Array.from(enc).map(b => b.toString(16).padStart(2,'0')).join('').padEnd(Math.ceil(enc.length/32)*64, '0');
-  return lenWord + dataHex;
-}
-
-function decodeString(hex) {
-  if (hex.startsWith('0x')) hex = hex.slice(2);
-  if (hex.length < 128) return null;
-  const offset = parseInt(hex.slice(0, 64), 16) * 2;
-  const len    = parseInt(hex.slice(offset, offset + 64), 16);
-  if (!len) return null;
-  const bytes  = hex.slice(offset + 64, offset + 64 + len * 2);
-  return new TextDecoder().decode(new Uint8Array(bytes.match(/.{2}/g).map(b => parseInt(b, 16))));
-}
-
-// ── Init ──
-renderDiscoveries();
-fetchAttestations();
-fetchENS();
-
-// Refresh attestations every 30s
-setInterval(fetchAttestations, 30_000);
-setInterval(fetchENS, 30_000);
+/* ─── INIT ────────────────────────────────────────────────────────────────── */
+buildSteps();
+buildFeed();
+loadPreset(0);
+loadLiveStats();
 </script>
+
 </body>
 </html>
