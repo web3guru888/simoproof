@@ -6,6 +6,7 @@
  */
 import 'dotenv/config';
 import { runPipeline } from '@simoproof/api';
+import { createAllJobs } from '@simoproof/keeperhub';
 
 const args       = process.argv.slice(2);
 const runAll     = args.includes('--all');
@@ -22,6 +23,15 @@ async function main() {
   console.log('═══════════════════════════════════════════════════════');
   console.log('  SimoProof v3 — Verified Discovery Network Demo');
   console.log('═══════════════════════════════════════════════════════\n');
+
+  // Initialize KeeperHub automation workflows (best-effort, non-blocking)
+  console.log('\n🔧 Initializing KeeperHub automation workflows...');
+  try {
+    await createAllJobs();
+    console.log('✅ KeeperHub workflows ready\n');
+  } catch (e) {
+    console.warn(`⚠️  KeeperHub setup skipped: ${e}\n`);
+  }
 
   const results = [];
 

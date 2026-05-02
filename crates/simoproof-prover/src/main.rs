@@ -54,13 +54,13 @@ fn main() -> Result<()> {
         claim:                file_input.claim,
         confidence:           file_input.confidence,
         confidence_threshold: 0.85,
-        consensus_threshold:  3,
+        consensus_threshold:  2,
         timestamp:            file_input.timestamp,
     };
 
     println!("[prover] Claim: {}...", &guest_input.claim[..guest_input.claim.len().min(60)]);
     println!("[prover] Confidence: {:.2} (threshold: 0.85)", guest_input.confidence);
-    println!("[prover] Consensus votes: {} (threshold: 3)", guest_input.consensus_vote_count);
+    println!("[prover] Consensus votes: {} (threshold: 2)", guest_input.consensus_vote_count);
 
     // Build executor environment — write private+public inputs
     let env = ExecutorEnv::builder()

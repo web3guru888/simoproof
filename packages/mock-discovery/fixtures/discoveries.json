@@ -6,7 +6,7 @@
     "source_description": "World Bank EN.ATM.CO2E.PC indicator, Thailand 2022",
     "raw_source_bytes": "W1t7InBhZ2UiOjEsInBhZ2VzIjoxLCJwZXJfcGFnZSI6IjUwIiwidG90YWwiOjF9XSxbeyJpbmRpY2F0b3IiOnsiY29kZSI6IkVOLkFUTS5DTzJFLlBDIn0sImNvdW50cnkiOnsiY29kZSI6IlRIIn0sInZhbHVlIjo0LjEyLCJkYXRlIjoiMjAyMiJ9XV0=",
     "confidence": 0.91,
-    "causal_summary": "industrial_output → co2_emissions (0.88); co2_emissions → temperature_anomaly (0.91)"
+    "causal_summary": "industrial_activity → co2_per_capita (0.91)"
   },
   {
     "id": "disc-002",
@@ -28,20 +28,20 @@
   },
   {
     "id": "disc-004",
-    "claim": "Arctic sea ice extent in September 2023 was the lowest recorded in the satellite era at 4.23 million km²",
-    "source_url": "https://api.worldbank.org/v2/country/1W/indicator/AG.LND.ICEL.K2?format=json&mrv=1",
-    "source_description": "NSIDC via World Bank climate indicators, Arctic extent 2023",
-    "raw_source_bytes": "W1t7InBhZ2UiOjF9XSxbeyJpbmRpY2F0b3IiOnsiY29kZSI6IkFHLkxORC5JQ0VMLksyIn0sInZhbHVlIjo0LjIzLCJkYXRlIjoiMjAyMyJ9XV0=",
+    "claim": "Global mean atmospheric CO2 concentration reached 421.08 ppm in 2023, up from 411.44 ppm in 2019, an increase of 9.64 ppm over four years",
+    "source_url": "https://gml.noaa.gov/webdata/ccgg/trends/co2/co2_annmean_mlo.txt",
+    "source_description": "NOAA GML Mauna Loa Observatory — annual mean CO2 concentration 2019–2023",
+    "raw_source_bytes": "MjAxOSA0MTEuNDQKMjAyMCA0MTIuNDYKMjAyMSA0MTQuNzIKMjAyMiA0MTguNTYKMjAyMyA0MjEuMDg=",
     "confidence": 0.99,
-    "causal_summary": "arctic_warming → sea_ice_melt (0.99); sea_ice_melt → albedo_feedback (0.94)"
+    "causal_summary": "fossil_fuel_combustion_and_land_use → atmospheric_co2_accumulation (0.99)"
   },
   {
     "id": "disc-005",
-    "claim": "Deforestation in the Amazon basin accelerated by 12% in 2022 relative to the 2018–2021 baseline",
+    "claim": "Brazil's forest area declined to 55.1% of total land area in 2022, down from 58.9% in 2018, a net reduction of 3.8 percentage points over four years",
     "source_url": "https://api.worldbank.org/v2/country/BR/indicator/AG.LND.FRST.ZS?format=json&mrv=5",
     "source_description": "World Bank AG.LND.FRST.ZS — Brazil forest area 2022",
     "raw_source_bytes": "W1t7InBhZ2UiOjF9XSxbeyJpbmRpY2F0b3IiOnsiY29kZSI6IkFHLkxORC5GUlNULlpTIn0sImNvdW50cnkiOnsiY29kZSI6IkJSIn0sInZhbHVlIjo1NS4xLCJkYXRlIjoiMjAyMiJ9XV0=",
     "confidence": 0.89,
-    "causal_summary": "land_use_change → forest_cover_loss (0.89); forest_cover_loss → carbon_release (0.91)"
+    "causal_summary": "agricultural_expansion_and_logging → amazon_forest_cover_reduction (0.89)"
   }
 ]

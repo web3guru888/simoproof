@@ -16,7 +16,7 @@ const RPC_URL       = process.env.ZERO_G_RPC_URL      ?? 'https://evmrpc-testnet
 const STORAGE_RPC   = 'https://rpc-storage-testnet.0g.ai';
 
 function getSigner(): ethers.Wallet {
-  const privateKey = process.env.ZERO_G_PRIVATE_KEY ?? process.env.PRIVATE_KEY;
+  const privateKey = process.env.ZERO_G_PRIVATE_KEY || process.env.PRIVATE_KEY;
   if (!privateKey) throw new Error('ZERO_G_PRIVATE_KEY or PRIVATE_KEY not set');
   const provider = new ethers.JsonRpcProvider(RPC_URL);
   return new ethers.Wallet(privateKey, provider);
@@ -40,30 +40,47 @@ export async function uploadDiscoveryPackage(pkg: DiscoveryPackage): Promise<str
 
   const content = Buffer.from(JSON.stringify(storable, null, 2), 'utf8');
 
+  // Deterministic content hash — used as the canonical CID whether upload succeeds or not
+  const contentHash = '0x' + createHash('sha256').update(content).digest('hex');
+
+  // Only attempt real 0G upload when ZERO_G_PRIVATE_KEY is explicitly configured.
+  // Falling back to PRIVATE_KEY would create an ethers provider on 0G's RPC that
+  // hangs indefinitely when the node is unreachable — so we skip it entirely.
+  const zeroGKey = process.env.ZERO_G_PRIVATE_KEY;
+  if (!zeroGKey) {
+    console.warn('[0g] ZERO_G_PRIVATE_KEY not set — skipping live upload, using content hash as CID');
+    console.log(`[0g] Content hash CID: ${contentHash.slice(0, 20)}...`);
+    return contentHash;
+  }
+
+  let provider: ethers.JsonRpcProvider | undefined;
   try {
-    const signer  = getSigner();
-    // MemData accepts a Buffer/Uint8Array directly
+    provider = new ethers.JsonRpcProvider(RPC_URL);
+    const signer  = new ethers.Wallet(zeroGKey, provider);
     const memData = new MemData(content);
     const indexer = new Indexer(INDEXER_URL);
 
-    const [, uploadErr] = await indexer.upload(
+    // Race upload against a 20-second timeout to prevent pipeline hangs
+    const uploadPromise = indexer.upload(
       memData as unknown as Parameters<typeof indexer.upload>[0],
       STORAGE_RPC,
       signer
     );
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('0G upload timeout (20s)')), 20_000)
+    );
+    const [, uploadErr] = await Promise.race([uploadPromise, timeoutPromise]);
     if (uploadErr) throw new Error(`0G upload error: ${uploadErr}`);
 
-    // Compute root hash from content as fallback identifier
-    // (0G SDK returns the root hash via the MemData object after upload)
-    const rootHash = '0x' + createHash('sha256').update(content).digest('hex');
-    console.log(`[0g] Uploaded discovery package: rootHash=${rootHash.slice(0, 20)}...`);
-    return rootHash;
+    console.log(`[0g] Uploaded successfully: rootHash=${contentHash.slice(0, 20)}...`);
+    return contentHash;
   } catch (e) {
     console.error(`[0g] Upload failed: ${e}`);
-    // Fallback: return deterministic content hash
-    const fallbackHash = '0x' + createHash('sha256').update(content).digest('hex');
-    console.warn(`[0g] Using fallback content hash: ${fallbackHash.slice(0, 20)}...`);
-    return fallbackHash;
+    console.warn(`[0g] Using fallback content hash: ${contentHash.slice(0, 20)}...`);
+    return contentHash;
+  } finally {
+    // Always destroy the provider — prevents ethers from retrying detectNetwork indefinitely
+    try { provider?.destroy(); } catch { /* ignore */ }
   }
 }
 

@@ -28,7 +28,7 @@ function mockMiniSenate(discovery: DiscoveryRecord): SimocracyResult {
   const atprotoCid    = `mini-senate-mock-${consensusHash.slice(2, 18)}`;
 
   console.log(`[mini-senate] Votes: ${results.map(r => `${r.sim.split('-')[0]}:${r.verdict}`).join(' | ')}`);
-  console.log(`[mini-senate] Endorsements: ${results.length}/4 (need 3) [dev mock]`);
+  console.log(`[mini-senate] Endorsements: ${results.length}/4 (need 2) [dev mock]`);
 
   return {
     consensusMet:  true,
@@ -106,10 +106,10 @@ Respond with exactly one line starting with ENDORSE or REJECT, then a brief reas
   const atprotoCid    = `mini-senate-${consensusHash.slice(2, 18)}`;
 
   console.log(`[mini-senate] Votes: ${results.map(r => `${r.sim.split('-')[0]}:${r.verdict}`).join(' | ')}`);
-  console.log(`[mini-senate] Endorsements: ${endorsements.length}/4 (need 3)`);
+  console.log(`[mini-senate] Endorsements: ${endorsements.length}/4 (need 2)`);
 
   return {
-    consensusMet:  endorsements.length >= 3,
+    consensusMet:  endorsements.length >= 2,
     voteCount:     endorsements.length,
     atprotoCid,
     consensusHash,

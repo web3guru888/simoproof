@@ -10,6 +10,8 @@ import {
   createWalletClient,
   http,
   parseAbi,
+  keccak256,
+  toBytes,
 } from 'viem';
 import { baseSepolia } from 'viem/chains';
 import { privateKeyToAccount } from 'viem/accounts';
@@ -56,15 +58,19 @@ export async function submitDiscovery(params: SubmitDiscoveryParams): Promise<`0
 
   console.log(`[chain] Submitting discovery to DiscoveryVerifier at ${verifier}...`);
 
-  // Encode params — strip 0x prefix for bytes params
-  const sealBytes    = Buffer.from(params.seal.slice(2), 'hex');
-  const journalBytes = Buffer.from(params.journalBytes.slice(2), 'hex');
+  // Ensure 0x prefix for viem hex strings (Rust prover emits plain hex, no 0x)
+  const sealHex    = (params.seal.startsWith('0x')
+    ? params.seal
+    : `0x${params.seal}`) as `0x${string}`;
+  const journalHex = (params.journalBytes.startsWith('0x')
+    ? params.journalBytes
+    : `0x${params.journalBytes}`) as `0x${string}`;
 
   const hash = await wal.writeContract({
     address:      verifier,
     abi:          DISCOVERY_VERIFIER_ABI,
     functionName: 'submitDiscovery',
-    args:         [sealBytes, journalBytes, params.ipfsCid, params.ensName],
+    args:         [sealHex, journalHex, params.ipfsCid, params.ensName],
   });
 
   console.log(`[chain] Tx submitted: ${hash}`);
@@ -73,25 +79,26 @@ export async function submitDiscovery(params: SubmitDiscoveryParams): Promise<`0
   const receipt = await pub.waitForTransactionReceipt({ hash });
   console.log(`[chain] Confirmed in block ${receipt.blockNumber}`);
 
-  // Find DiscoveryVerified event
-  const log = receipt.logs.find(
-    l => l.topics[0] === '0x' + Buffer.from(
-      'DiscoveryVerified(bytes32,bytes32,address,bytes32,bytes32)'
-    ).toString('hex') // This is wrong — keccak256 of event sig
+  // Find DiscoveryVerified event by proper keccak256 of the event signature
+  const DISCOVERY_VERIFIED_TOPIC = keccak256(
+    toBytes('DiscoveryVerified(bytes32,bytes32,address,bytes32,bytes32)')
+  );
+  const discoveryLog = receipt.logs.find(
+    l => l.topics[0]?.toLowerCase() === DISCOVERY_VERIFIED_TOPIC.toLowerCase()
   );
 
-  // Return easUid from topics[2] (second indexed param)
-  // In practice, use viem's decodeEventLog for proper parsing
-  if (receipt.logs.length > 0) {
-    // EAS UID is topics[2] of the DiscoveryVerified event
-    const discoveryLog = receipt.logs.find(l => l.topics.length >= 3);
-    if (discoveryLog?.topics[2]) {
-      return discoveryLog.topics[2] as `0x${string}`;
-    }
+  // topics[2] = easUid (second indexed param)
+  if (discoveryLog?.topics[2]) {
+    console.log(`[chain] DiscoveryVerified event found — easUid=${discoveryLog.topics[2].slice(0, 18)}...`);
+    return discoveryLog.topics[2] as `0x${string}`;
   }
 
-  // Fallback: derive UID from tx hash
-  return `0x${receipt.transactionHash.slice(2, 66)}` as `0x${string}`;
+  // Fallback: derive deterministic UID from tx hash + block number
+  const fallbackUid = keccak256(
+    toBytes(`${receipt.transactionHash}:${receipt.blockNumber}`)
+  );
+  console.warn(`[chain] DiscoveryVerified event not found — using fallback UID derived from tx hash`);
+  return fallbackUid;
 }
 
 /**
@@ -104,14 +111,14 @@ export async function verifyProofOnChain(
   const { pub } = getClients();
   const verifier = getVerifierAddress();
 
-  const sealBytes    = Buffer.from(seal.slice(2), 'hex');
-  const journalBuf   = Buffer.from(journalBytes.slice(2), 'hex');
+  const sealHex    = (seal.startsWith('0x') ? seal : `0x${seal}`) as `0x${string}`;
+  const journalHex = (journalBytes.startsWith('0x') ? journalBytes : `0x${journalBytes}`) as `0x${string}`;
 
   const result = await pub.readContract({
     address:      verifier,
     abi:          DISCOVERY_VERIFIER_ABI,
     functionName: 'verifyProof',
-    args:         [sealBytes, journalBuf],
+    args:         [sealHex, journalHex],
   });
   return result as boolean;
 }

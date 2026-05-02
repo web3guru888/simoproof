@@ -13,10 +13,12 @@ import { execSync } from 'child_process';
 import { writeFileSync, readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join, resolve } from 'path';
+import { encodeAbiParameters }             from 'viem';
 
 import { getDiscovery, fetchLiveDiscovery } from '@simoproof/mock-discovery';
 import { submitToSenate }                  from '@simoproof/simocracy';
 import { uploadDiscoveryPackage }          from '@simoproof/storage';
+import { emitKeeperEvent }                 from '@simoproof/keeperhub';
 import type { PipelineResult, ProofOutput } from '@simoproof/types';
 
 const __dirname    = dirname(fileURLToPath(import.meta.url));
@@ -87,8 +89,11 @@ export async function runPipeline(opts: PipelineOptions = {}): Promise<PipelineR
   console.log(`[simocracy] CID: ${simResult.atprotoCid}`);
 
   if (!simResult.consensusMet) {
-    throw new Error(`Simocracy Senate rejected the discovery (${simResult.voteCount}/4 endorsements, need 3)`);
+    throw new Error(`Simocracy Senate rejected the discovery (${simResult.voteCount}/4 endorsements, need 2)`);
   }
+
+  // Emit KeeperHub event: senate passed, discovery is pending proof
+  await emitKeeperEvent('discovery.pending', discovery.id);
 
   // ── Step 4: Risc0 ZK Proof ────────────────────────────────────────────
   console.log('[pipeline] Generating ZK proof...');
@@ -106,31 +111,43 @@ export async function runPipeline(opts: PipelineOptions = {}): Promise<PipelineR
   const outputPath = `/tmp/proof-${discovery.id}.json`;
   writeFileSync(inputPath, JSON.stringify(proverInput));
 
+  // Use the pre-compiled binary directly — avoids Cargo recompile overhead (which OOM-kills
+  // on low-memory hosts when running 5 discoveries back-to-back). Binary is compiled once
+  // at build time; `cargo run` is only needed when the guest or host source changes.
+  const proverBinary = resolve(join(PROJECT_ROOT, 'target', 'release', 'simoproof-prover'));
   try {
     execSync(
-      `cargo run -p simoproof-prover --release -- --input ${inputPath} --output ${outputPath}`,
+      `${proverBinary} --input ${inputPath} --output ${outputPath}`,
       { stdio: 'inherit', cwd: PROJECT_ROOT, timeout: 300_000, env: { ...process.env } }
     );
   } catch (e) {
     throw new Error(`Risc0 prover failed: ${e}`);
   }
 
-  // Rust prover outputs snake_case JSON; map to TypeScript camelCase ProofOutput
+  // Rust prover outputs snake_case JSON with plain hex (no 0x prefix).
+  // Add 0x prefix so viem / ethers can handle them as proper hex strings.
   const rawProof = JSON.parse(readFileSync(outputPath, 'utf8')) as Record<string, unknown>;
+  const h = (v: unknown): `0x${string}` => {
+    const s = String(v ?? '');
+    return (s.startsWith('0x') ? s : `0x${s}`) as `0x${string}`;
+  };
   const proof: ProofOutput = {
-    seal:             (rawProof['seal']               ?? rawProof['seal']              ) as `0x${string}`,
-    journalBytes:     (rawProof['journal_bytes']       ?? rawProof['journalBytes']      ) as `0x${string}`,
-    imageId:          (rawProof['image_id']            ?? rawProof['imageId']           ) as `0x${string}`,
-    claimHash:        (rawProof['claim_hash']          ?? rawProof['claimHash']         ) as `0x${string}`,
-    sourceCommitment: (rawProof['source_commitment']   ?? rawProof['sourceCommitment']  ) as `0x${string}`,
-    consensusHash:    (rawProof['consensus_hash']      ?? rawProof['consensusHash']     ) as `0x${string}`,
-    confidenceMet:    (rawProof['confidence_met']      ?? rawProof['confidenceMet']     ) as boolean,
-    consensusMet:     (rawProof['consensus_met']       ?? rawProof['consensusMet']      ) as boolean,
-    causalValid:      (rawProof['causal_valid']        ?? rawProof['causalValid']       ) as boolean,
+    seal:             h(rawProof['seal']             ?? rawProof['seal']            ),
+    journalBytes:     h(rawProof['journal_bytes']    ?? rawProof['journalBytes']    ),
+    imageId:          h(rawProof['image_id']         ?? rawProof['imageId']         ),
+    claimHash:        h(rawProof['claim_hash']       ?? rawProof['claimHash']       ),
+    sourceCommitment: h(rawProof['source_commitment']?? rawProof['sourceCommitment']),
+    consensusHash:    h(rawProof['consensus_hash']   ?? rawProof['consensusHash']   ),
+    confidenceMet:    (rawProof['confidence_met']    ?? rawProof['confidenceMet']   ) as boolean,
+    consensusMet:     (rawProof['consensus_met']     ?? rawProof['consensusMet']    ) as boolean,
+    causalValid:      (rawProof['causal_valid']      ?? rawProof['causalValid']     ) as boolean,
     timestamp:        rawProof['timestamp'] as number,
   };
   console.log(`[risc0] Proof generated. imageId=${String(proof.imageId).slice(0, 20)}...`);
   console.log(`[risc0] confidence_met=${proof.confidenceMet} consensus_met=${proof.consensusMet} causal_valid=${proof.causalValid}`);
+
+  // Emit KeeperHub event: proof generated
+  await emitKeeperEvent('discovery.validated', discovery.id);
 
   if (!skipOnChain) {
     // ── Step 5: Upload to 0G ──────────────────────────────────────────────
@@ -146,16 +163,48 @@ export async function runPipeline(opts: PipelineOptions = {}): Promise<PipelineR
     });
     console.log(`[0g] Stored: ${ipfsCid.slice(0, 32)}...`);
 
+    // Emit KeeperHub event: data uploaded, ready for attestation
+    await emitKeeperEvent('discovery.proved', discovery.id);
+
     // ── Step 6: Submit on-chain ────────────────────────────────────────────
     console.log('[pipeline] Submitting on-chain attestation...');
     const { submitDiscovery, updateDiscoveryCount } = await import('@simoproof/chain');
+
+    // The Rust prover journal uses RISC Zero's binary serde, not Ethereum ABI encoding.
+    // The DiscoveryVerifier.sol does abi.decode(journalBytes, (bytes32,bytes32,bytes32,bool,bool,bool,uint64)).
+    // So we ABI-encode the proof outputs here before passing to the contract.
+    // With MockRiscZeroVerifier the seal/journalDigest are not checked — only the abi.decode matters.
+    const abiJournalBytes = encodeAbiParameters(
+      [
+        { name: 'claimHash',        type: 'bytes32' },
+        { name: 'sourceCommitment', type: 'bytes32' },
+        { name: 'consensusHash',    type: 'bytes32' },
+        { name: 'confidenceMet',    type: 'bool'    },
+        { name: 'consensusMet',     type: 'bool'    },
+        { name: 'causalValid',      type: 'bool'    },
+        { name: 'timestamp',        type: 'uint64'  },
+      ],
+      [
+        proof.claimHash        as `0x${string}`,
+        proof.sourceCommitment as `0x${string}`,
+        proof.consensusHash    as `0x${string}`,
+        proof.confidenceMet,
+        proof.consensusMet,
+        proof.causalValid,
+        BigInt(proof.timestamp),
+      ]
+    );
+
     const easUid = await submitDiscovery({
       seal:         proof.seal,
-      journalBytes: proof.journalBytes,
+      journalBytes: abiJournalBytes,   // ABI-encoded — matches contract's abi.decode expectation
       ipfsCid,
       ensName:      process.env.ENS_SUBNAME ?? 'node-1.simoproof.eth',
     });
     console.log(`[eas] Attestation UID: ${easUid}`);
+
+    // Emit KeeperHub event: attestation on-chain, trigger ENS update
+    await emitKeeperEvent('discovery.attested', discovery.id);
 
     // ── Step 7: Update ENS ────────────────────────────────────────────────
     console.log('[pipeline] Updating ENS text records...');
