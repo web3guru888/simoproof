@@ -19,7 +19,12 @@ A ZK-provable, ENS-native, decentralised protocol for verifying empirical claims
 | **DiscoveryVerifier.sol** | Base Sepolia (84532) | [`0x902e138Be827c6AE8504Cfd2E54caeb2910690Dc`](https://sepolia.basescan.org/address/0x902e138Be827c6AE8504Cfd2E54caeb2910690Dc) |
 | **MockRiscZeroVerifier** | Base Sepolia (84532) | [`0x844acEb55db4e96a862692C2663BF97DC7E73708`](https://sepolia.basescan.org/address/0x844acEb55db4e96a862692C2663BF97DC7E73708) |
 | **EAS Schema** | Base Sepolia | [`0x86704ade...319a2`](https://base-sepolia.easscan.org/schema/view/0x86704ade90c66f1fc5071d0a00e8d0c5055f4c5048d8ae2d7866cf55b3a319a2) |
-| **Live EAS Attestation** | Base Sepolia | [`0x2443c5c7...7f4`](https://base-sepolia.easscan.org/attestation/view/0x2443c5c7e9cf66f30ea071a6707b7dbfc45f4ce8d006ea1800732eba6413f7f4) |
+| **Live EAS Attestation (disc-001)** | Base Sepolia | [`0x2443c5c7...7f4`](https://base-sepolia.easscan.org/attestation/view/0x2443c5c7e9cf66f30ea071a6707b7dbfc45f4ce8d006ea1800732eba6413f7f4) |
+| **Live EAS Attestation (disc-002)** | Base Sepolia | [`0xd19b1676...db0`](https://base-sepolia.easscan.org/attestation/view/0xd19b16762406f6c323d95d891c45f25fa18cc6c39b43ee1ca8707fd16d0f1db0) |
+| **Live EAS Attestation (disc-003)** | Base Sepolia | [`0x61b2dd07...6a8`](https://base-sepolia.easscan.org/attestation/view/0x61b2dd0797c3b6639a634ecd9cbbb9171fa839ef1e3ca70bdf7b7cf3d88716a8) |
+| **Live EAS Attestation (disc-004)** | Base Sepolia | [`0x148e16e0...43e`](https://base-sepolia.easscan.org/attestation/view/0x148e16e0eac497aba8323970cefb1688b73e67957625b3400d17ecb276f2143e) |
+| **Live EAS Attestation (disc-005)** | Base Sepolia | [`0x86148acb...1ed`](https://base-sepolia.easscan.org/attestation/view/0x86148acbc15dfe6182dd4d6dd7eea377dee4b42c851c9adc97655ae8381b71ed) |
+| **Website** | Cloudflare Pages | [simoproof.org](https://simoproof.org) |
 | **RISC Zero Verifier** | Base Sepolia | [`0x0b144e07...b711`](https://sepolia.basescan.org/address/0x0b144e07a0826182b6b59788c34b32bfa86fb711) |
 | **ENS Parent** | Sepolia | [`simoproof.eth`](https://sepolia.app.ens.domains/name/simoproof.eth) |
 | **ENS Node Identity** | Sepolia | [`node-1.simoproof.eth`](https://sepolia.app.ens.domains/name/node-1.simoproof.eth) |
