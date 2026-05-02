@@ -86,13 +86,15 @@ export async function getTextRecord(ensName: string, key: string): Promise<strin
 
 /**
  * Set a text record on ENS resolver.
+ * Waits for confirmation by default to avoid nonce collisions on sequential calls.
  */
 export async function setTextRecord(
   ensName: string,
   key: string,
-  value: string
+  value: string,
+  opts: { waitForReceipt?: boolean } = { waitForReceipt: true }
 ): Promise<`0x${string}`> {
-  const { wal } = getClients();
+  const { pub, wal } = getClients();
   const node = namehash(ensName);
   const hash = await wal.writeContract({
     address:      PUBLIC_RESOLVER,
@@ -101,6 +103,9 @@ export async function setTextRecord(
     args:         [node, key, value],
   });
   console.log(`[ens] setText(${ensName}, ${key}, ${value.slice(0, 30)}...): ${hash}`);
+  if (opts.waitForReceipt !== false) {
+    await pub.waitForTransactionReceipt({ hash });
+  }
   return hash;
 }
 
