@@ -941,7 +941,106 @@ footer a { color: var(--lime); text-decoration: none; }
   animation: spinr .65s linear infinite;
 }
 @keyframes spinr { to { transform: rotate(360deg); } }
+
+/* ─── ENS IDENTITY SECTION ───────────────────────────────────────────────── */
+.ens-live-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+  flex-wrap: wrap;
+}
+.ens-status-badge {
+  font-family: var(--mono);
+  font-size: .78rem;
+  background: rgba(170,255,0,.08);
+  color: var(--lime);
+  border: 1px solid rgba(170,255,0,.25);
+  border-radius: 999px;
+  padding: .25rem .85rem;
+}
+.ens-table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+.ens-th-row {
+  display: grid;
+  grid-template-columns: 175px 1fr 180px;
+  gap: .5rem;
+  padding: .45rem 1rem;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+.ens-th {
+  font-family: var(--mono);
+  font-size: .65rem;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--muted);
+  font-weight: 600;
+}
+.ens-section-record {
+  display: grid;
+  grid-template-columns: 175px 1fr 180px;
+  gap: .5rem;
+  font-family: var(--mono);
+  font-size: .74rem;
+  padding: .45rem 1rem;
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+}
+.ens-section-record:last-child { border-bottom: none; }
+.ens-purpose-col {
+  font-size: .68rem;
+  color: var(--ghost);
+}
+.ens-live-badge {
+  display: inline-block;
+  font-size: .62rem;
+  background: rgba(170,255,0,.12);
+  color: var(--lime);
+  border: 1px solid rgba(170,255,0,.25);
+  border-radius: 4px;
+  padding: 0 .35rem;
+  vertical-align: middle;
+  margin-left: .35rem;
+  font-weight: 600;
+}
+.ens-uid-link {
+  color: var(--sky);
+  text-decoration: none;
+  font-family: var(--mono);
+  font-size: .74rem;
+}
+.ens-uid-link:hover { text-decoration: underline; }
+.ens-note {
+  font-size: .78rem;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-top: .25rem;
+}
+.ens-note a { color: var(--sky); text-decoration: none; }
+.ens-note a:hover { text-decoration: underline; }
+.ens-skeleton {
+  font-family: var(--mono);
+  font-size: .82rem;
+  color: var(--muted);
+  padding: 1.1rem 1rem;
+  animation: blink .9s infinite;
+}
+.ens-stale-note {
+  font-size: .78rem;
+  color: var(--amber);
+  font-family: var(--mono);
+  padding: .5rem 1rem;
+  background: rgba(255,187,0,.05);
+  border-top: 1px solid rgba(255,187,0,.2);
+}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
 </head>
 <body>
 
@@ -954,6 +1053,7 @@ footer a { color: var(--lime); text-decoration: none; }
   <div class="nav-links">
     <a href="#demo">Demo</a>
     <a href="#feed">Attestations</a>
+    <a href="#ens">ENS Identity</a>
     <a href="https://github.com/web3guru888/simoproof" target="_blank">GitHub</a>
     <a href="https://base-sepolia.easscan.org/schema/view/0x86704ade90c66f1fc5071d0a00e8d0c5055f4c5048d8ae2d7866cf55b3a319a2" target="_blank">EAS Schema</a>
     <a href="https://ethglobal.com/events/openagents" target="_blank" class="nav-pill">🏆 ETHGlobal Open Agents</a>
@@ -1139,6 +1239,39 @@ footer a { color: var(--lime); text-decoration: none; }
 
 <hr class="divider" />
 
+<!-- ─── ENS IDENTITY ─────────────────────────────────────────────────────── -->
+<section class="section" id="ens">
+  <div class="section-label">ENS Identity</div>
+  <div class="section-title">node-1.simoproof.eth — ENSIP-25 Agent</div>
+  <div class="section-desc">Live text records read directly from the Sepolia Public Resolver. Updated on-chain after every verified discovery.</div>
+
+  <div class="ens-live-header">
+    <div class="ens-name-display">🌐 node-1.simoproof.eth</div>
+    <div class="ens-status-badge">🟢 Live — Sepolia</div>
+  </div>
+
+  <div class="ens-table-wrap" id="ensPanel">
+    <div class="ens-th-row">
+      <span class="ens-th">Key</span>
+      <span class="ens-th">Value</span>
+      <span class="ens-th">Purpose</span>
+    </div>
+    <div class="ens-skeleton" id="ensLoading">⟳ Fetching records from Sepolia…</div>
+    <div id="ensSectionRecords" style="display:none"></div>
+  </div>
+
+  <p class="ens-note">
+    Records set via direct <code style="font-size:.75rem;color:var(--lime)">setText()</code> on resolver
+    <code style="font-size:.75rem;color:var(--lime)">0xE998…BE49b5</code>.
+    The ENS Manager UI reads from a different interface — verify directly:
+    &nbsp;<a href="https://sepolia.etherscan.io/address/0xE99638b40E4Fff0129D56f03b55b6bbC4BBE49b5#readContract" target="_blank">View resolver on Etherscan →</a>
+    &nbsp;&nbsp;<a href="https://app.ens.domains/node-1.simoproof.eth" target="_blank">ENS App →</a>
+  </p>
+</section>
+
+
+<hr class="divider" />
+
 <!-- ─── DEPLOYMENTS ───────────────────────────────────────────────────────── -->
 <section class="section">
   <div class="section-label">Live Deployments</div>
@@ -1162,6 +1295,7 @@ footer a { color: var(--lime); text-decoration: none; }
       <div class="cc-net">Sepolia — ENSIP-25 agent name</div>
       <div class="cc-addr">node-1.simoproof.eth</div>
       <a class="cc-link" href="https://app.ens.domains/node-1.simoproof.eth" target="_blank">ENS App →</a>
+      <a class="cc-link" href="#ens">Live Records ↑</a>
     </div>
     <div class="contract-card">
       <div class="cc-head">MockRiscZeroVerifier</div>
@@ -1616,17 +1750,21 @@ async function runPipeline() {
     <div class="ens-record"><span class="erk">discoveries_count</span><span class="erv" style="color:var(--muted);animation:blink .7s infinite">updating…</span></div>
     <div class="ens-record"><span class="erk">latest_eas_uid</span><span class="erv" style="color:var(--muted);animation:blink .7s infinite">updating…</span></div>
     <div class="ens-record"><span class="erk">agent_type</span><span class="erv">verified-discovery-node</span></div>
-    <div class="ens-record"><span class="erk">network</span><span class="erv">base-sepolia</span></div>
     <div class="ens-record"><span class="erk">schema_uid</span><span class="erv">${SCHEMA_UID.slice(0,22)}…</span></div>
   `;
   await sleep(700);
+  // Re-fetch live ENS records to show updated on-chain state
+  const liveEnsData = await fetchAllENSRecords().catch(() => ({}));
+  const liveCount = liveEnsData['discoveries_count'] || String(newCount);
+  const liveUid   = liveEnsData['latest_eas_uid']    || (realEasUid || displayUid);
   $('ensContent').innerHTML = `
-    <div class="ens-record"><span class="erk">discoveries_count</span><span class="erv flash" id="ens-count">${newCount}</span></div>
-    <div class="ens-record"><span class="erk">latest_eas_uid</span><span class="erv flash">${(realEasUid || displayUid).slice(0,22)}…</span></div>
+    <div class="ens-record"><span class="erk">discoveries_count</span><span class="erv flash" id="ens-count" style="color:var(--lime);font-weight:700">${liveCount}<span class="ens-live-badge">&#x2191; live</span></span></div>
+    <div class="ens-record"><span class="erk">latest_eas_uid</span><span class="erv flash"><a class="ens-uid-link" href="https://base-sepolia.easscan.org/attestation/view/${liveUid}" target="_blank">${liveUid.slice(0,22)}…</a></span></div>
     <div class="ens-record"><span class="erk">agent_type</span><span class="erv">verified-discovery-node</span></div>
-    <div class="ens-record"><span class="erk">network</span><span class="erv">base-sepolia</span></div>
     <div class="ens-record"><span class="erk">schema_uid</span><span class="erv">${SCHEMA_UID.slice(0,22)}…</span></div>
   `;
+  // Refresh the standalone ENS section too
+  loadENSSection();
   setStep(6, 'done');
   await sleep(250);
 
@@ -1737,31 +1875,95 @@ function addToFeed(claim, uid) {
   list.prepend(row);
 }
 
-/* ─── ENS LIVE FETCH ──────────────────────────────────────────────────────── */
+/* ─── ENS LIVE FETCH (ethers.js v6) ──────────────────────────────────────── */
+const ENS_RPC_URL     = 'https://ethereum-sepolia-rpc.publicnode.com';
+const ENS_RPC_BACKUP  = 'https://rpc.sepolia.org';
+const ENS_RESOLVER    = '0xE99638b40E4Fff0129D56f03b55b6bbC4BBE49b5';
+const ENS_NODE_NAME   = 'node-1.simoproof.eth';
+const ENS_RECORD_DEFS = [
+  { key:'agent_type',        purpose:'Agent identity',          fallback:'verified-discovery-node' },
+  { key:'capabilities',      purpose:'Claim routing',           fallback:'climate,health,ecology' },
+  { key:'protocol_version',  purpose:'Version negotiation',     fallback:'3.0' },
+  { key:'schema_uid',        purpose:'EAS schema pointer',      fallback:'0x86704a…' },
+  { key:'discoveries_count', purpose:'Running total',           fallback:'10', highlight:true },
+  { key:'latest_eas_uid',    purpose:'Most recent attestation', fallback:'0xddeb0e…', isLink:true },
+  { key:'axl_pubkey',        purpose:'P2P peer discovery',      fallback:'' },
+];
+
+let _ensProvider = null, _ensResolver = null, _ensNode = null;
+function getEnsResolver() {
+  if (!_ensResolver) {
+    try {
+      _ensProvider = new ethers.JsonRpcProvider(ENS_RPC_URL);
+      _ensResolver = new ethers.Contract(
+        ENS_RESOLVER,
+        ['function text(bytes32 node, string key) view returns (string)'],
+        _ensProvider
+      );
+      _ensNode = ethers.namehash(ENS_NODE_NAME);
+    } catch(e) { return null; }
+  }
+  return { contract: _ensResolver, node: _ensNode };
+}
+
 async function fetchENSText(key) {
   try {
-    const SEPOLIA_RPC = 'https://ethereum-sepolia-rpc.publicnode.com';
-    const resolver = '0x8FADE66B79cC9f707aB26799354482EB93a5B7dD';
-    // precomputed namehash for node-1.simoproof.eth
-    const node = '0x4c3cf1d9c89b50c3bb26d0f19a30b49aa9a9b11e879e92a4b98d8e71bbdea1f2';
-    const fnSig = '0x59d1d43c';
-    const keyBytes = [...new TextEncoder().encode(key)];
-    const keyHex = keyBytes.map(b => b.toString(16).padStart(2,'0')).join('');
-    const keyLen = key.length.toString(16).padStart(64,'0');
-    const keyPad = keyHex.padEnd(Math.ceil(keyHex.length/64)*64,'0');
-    const data = fnSig + node.slice(2) + '0'.repeat(64-2) + '40' + keyLen + keyPad;
-    const res = await fetch(SEPOLIA_RPC, {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ jsonrpc:'2.0', id:1, method:'eth_call', params:[{to:resolver,data},'latest'] })
-    });
-    const j = await res.json();
-    if (!j.result || j.result === '0x') return null;
-    const hex = j.result.slice(2);
-    const offset = parseInt(hex.slice(64,128),16)*2;
-    const len = parseInt(hex.slice(offset,offset+64),16);
-    const strHex = hex.slice(offset+64, offset+64+len*2);
-    return new TextDecoder().decode(new Uint8Array(strHex.match(/.{2}/g).map(h=>parseInt(h,16))));
+    const ctx = getEnsResolver();
+    if (!ctx) return null;
+    const val = await ctx.contract.text(ctx.node, key);
+    return val || null;
   } catch { return null; }
+}
+
+async function fetchAllENSRecords() {
+  const ctx = getEnsResolver();
+  if (!ctx) return {};
+  const results = {};
+  await Promise.all(ENS_RECORD_DEFS.map(async def => {
+    try {
+      const val = await ctx.contract.text(ctx.node, def.key);
+      if (val) results[def.key] = val;
+    } catch {}
+  }));
+  return results;
+}
+
+function buildEnsRecordRows(records, animated) {
+  return ENS_RECORD_DEFS.map(def => {
+    const val = records[def.key] ?? '';
+    const displayVal = val || def.fallback;
+    let valHtml;
+    if (def.isLink && val && val.startsWith('0x')) {
+      const href = `https://base-sepolia.easscan.org/attestation/view/${val}`;
+      valHtml = `<a class="ens-uid-link" href="${href}" target="_blank">${val.slice(0,22)}…</a>`;
+    } else if (def.highlight) {
+      const cls = animated ? ' flash' : '';
+      valHtml = `<span class="erv${cls}" style="color:var(--lime);font-weight:700">${displayVal}<span class="ens-live-badge">&#x2191; live</span></span>`;
+    } else {
+      valHtml = `<span class="erv">${displayVal || '<span style="color:var(--muted)">—</span>'}</span>`;
+    }
+    return `<div class="ens-section-record"><span class="erk">${def.key}</span>${valHtml}<span class="ens-purpose-col">${def.purpose}</span></div>`;
+  }).join('\n');
+}
+
+async function loadENSSection() {
+  const loading = $('ensLoading');
+  const records = $('ensSectionRecords');
+  if (!records) return;
+  try {
+    const data = await fetchAllENSRecords();
+    const hasData = Object.keys(data).length > 0;
+    records.innerHTML = buildEnsRecordRows(data, false);
+    if (!hasData) {
+      records.innerHTML += '<div class="ens-stale-note">&#9888; RPC unavailable — showing last known values</div>';
+    }
+  } catch(e) {
+    records.innerHTML = buildEnsRecordRows({}, false) +
+      '<div class="ens-stale-note">&#9888; RPC unavailable — showing last known values</div>';
+  } finally {
+    if (loading) loading.style.display = 'none';
+    records.style.display = '';
+  }
 }
 
 async function loadLiveStats() {
@@ -1776,6 +1978,7 @@ buildSteps();
 buildFeed();
 loadPreset(0);
 loadLiveStats();
+loadENSSection();
 </script>
 
 </body>
