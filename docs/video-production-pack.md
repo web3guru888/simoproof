@@ -497,27 +497,26 @@ ETHGlobal judges often watch without sound. Add captions:
 
 ## TIMING BREAKDOWN
 
-| Section | Start | End | Duration | Words | wpm | Speaker(s) |
-|---------|-------|-----|----------|-------|-----|-----------|
-| Problem — Hook | 00:00 | 00:18 | 0:18 | 30 | 100 | SHAKA |
-| Problem — Stats | 00:18 | 00:34 | 0:16 | 29 | 109 | ROBIN |
-| Problem — Root causes | 00:34 | 00:45 | 0:11 | 21 | 114 | SHAKA |
+| Section | Start | End | Duration | Words | wpm | Speaker |
+|---------|-------|-----|----------|-------|-----|---------|
+| Problem — Hook & Stats | 00:00 | 00:20 | 0:20 | 52 | 156 | SHAKA |
+| Problem — Root causes | 00:20 | 00:45 | 0:25 | 26 | 62 | SHAKA |
 | Solution — Intro | 00:45 | 00:52 | 0:07 | 13 | 111 | SHAKA |
-| Solution — Architecture | 00:52 | 01:18 | 0:26 | 62 | 143 | ROBIN |
-| Demo — Site load | 01:18 | 01:26 | 0:08 | 18 | 135 | ROBIN |
+| Solution — Architecture | 00:52 | 01:18 | 0:26 | 60 | 138 | SHAKA |
+| Demo — Site load | 01:18 | 01:26 | 0:08 | 17 | 128 | ROBIN |
 | Demo — Claim select | 01:26 | 01:36 | 0:10 | 17 | 102 | ROBIN |
-| Demo — Steps 1–2 | 01:36 | 01:46 | 0:10 | 17 | 102 | ROBIN |
-| Demo — ZK proof ⭐ | 01:46 | 02:02 | 0:16 | 38 | 142 | SHAKA |
-| Demo — Steps 4–7 | 02:02 | 02:12 | 0:10 | 24 | 144 | ROBIN |
+| Demo — Steps 1–2 | 01:36 | 01:46 | 0:10 | 18 | 108 | ROBIN |
+| Demo — ZK proof ⭐ | 01:46 | 02:02 | 0:16 | 42 | 158 | ROBIN |
+| Demo — Steps 4–7 | 02:02 | 02:12 | 0:10 | 25 | 150 | ROBIN |
 | Demo — Attestation | 02:12 | 02:20 | 0:08 | 20 | 150 | ROBIN |
-| Demo — ENS | 02:20 | 02:27 | 0:07 | 22 | 188 | ROBIN |
-| Prize — ENS | 02:27 | 02:35 | 0:08 | 22 | 165 | SHAKA |
-| Prize — Gensyn AXL | 02:35 | 02:43 | 0:08 | 22 | 165 | ROBIN |
-| Prize — KeeperHub | 02:43 | 02:49 | 0:06 | 13 | 130 | SHAKA |
+| Demo — ENS | 02:20 | 02:27 | 0:07 | 18 | 154 | ROBIN |
+| Prize — ENS | 02:27 | 02:36 | 0:09 | 25 | 167 | ROBIN |
+| Prize — Gensyn AXL | 02:36 | 02:44 | 0:08 | 23 | 173 | ROBIN |
+| Prize — KeeperHub | 02:44 | 02:49 | 0:05 | 14 | 168 | ROBIN |
 | Close | 02:49 | 02:57 | 0:08 | 16 | 120 | SHAKA |
-| **TOTAL** | | | **2:57** | **384** | **~130 avg** | |
+| **TOTAL** | | | **2:57** | **386** | **~130 avg** | |
 
-> **Note on wpm:** The Architecture section (Robin, 143 wpm) and Attestation/ENS sections are slightly fast but realistic for an excited builder reciting a technical list. If any section feels rushed on playback, add 0.5–1 second of visual-only pause before the next line rather than cutting words.
+> **Note on wpm:** Problem — Hook is fast (156 wpm) — Shaka's energetic opener, lean into it. Problem — Root causes is slow (62 wpm) — deliberate dramatic pause, let each line land. The ZK proof moment (Robin, 158 wpm) is marked "slow down" in the script — target 130–140 wpm there. Prize integrations (167–173 wpm) are intentionally rapid-fire; the visual carries the detail. If any section feels rushed on playback, add a 0.5–1 second visual-only pause rather than cutting words.
 
 ---
 
