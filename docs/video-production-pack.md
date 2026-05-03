@@ -41,61 +41,60 @@
 ## FULL SCRIPT
 
 > **Format note:** Each line is timestamped `[MM:SS–MM:SS]`. Approximate word count shown as `(~N wds)` — this is your pacing guide. Natural speech runs ~120–130 wpm; do not rush. Lines are your words — adjust any phrasing that doesn't feel like you.
+>
+> **Speaker assignments:** SHAKA owns Sections 1, 2 and 5 (narrative, problem, solution, close). ROBIN owns Sections 3 and 4 (live demo, integrations).
 
 ---
 
 ### SECTION 1 — THE PROBLEM `[00:00–00:45]`
+**Speaker: SHAKA**
 
 ```
-[00:00–00:18] SHAKA:
+[00:00–00:20] SHAKA:
 Seventy percent of researchers can't reproduce each other's experiments. And now AI is
 generating discoveries a thousand times faster than humans can verify. The trust problem
-just got exponentially worse.
+just got exponentially worse. Twenty-eight billion dollars a year wasted. Regulators
+can't audit it. Investors won't fund it. The public calls it hallucinations and moves on.
+(~52 wds)
+
+[00:20–00:45] SHAKA:
+The root cause? No deterministic execution. No consensus mechanism. No cryptographic
+proof that a claim was valid when it was made. That's the gap SimoProof closes.
 (~30 wds)
-
-[00:18–00:34] ROBIN:
-Twenty-eight billion dollars a year gets wasted on irreproducible research. Regulators
-can't verify AI-generated claims. Investors won't fund what they can't audit. The public
-calls it hallucinations and moves on.
-(~29 wds)
-
-[00:34–00:45] SHAKA:
-No deterministic execution. No consensus mechanism. No cryptographic proof that a claim
-was valid when it was made. That's the gap.
-(~21 wds)
 ```
 
 ---
 
 ### SECTION 2 — THE SOLUTION `[00:45–01:18]`
+**Speaker: SHAKA**
 
 ```
 [00:45–00:52] SHAKA:
-SimoProof. ZK-provable, ENS-native, decentralized. Every empirical claim proven on-chain,
-step by step.
+SimoProof. ZK-provable, ENS-native, decentralized. Every empirical claim proven
+on-chain, step by step.
 (~13 wds)
 
-[00:52–01:18] ROBIN:
-A claim comes in. Gensyn AXL pre-validates it across three encrypted P2P nodes. Then
-our Simocracy senate — four AI agents running on ASI:One — vote independently. Two of
-four endorsements to pass. The source hash, confidence score, and senate transcript are
-all committed inside a RISC Zero ZK proof. Stored immutably on 0G. EAS attestation on
-Base Sepolia. The verifier node's ENS identity updates live. KeeperHub automates every
-step with guaranteed retry.
-(~62 wds — fast technical rhythm; visual pipeline on screen supports it)
+[00:52–01:18] SHAKA:
+A discovery comes in through Gensyn AXL — three P2P nodes pre-validate it. Our
+Simocracy senate, four AI agents on ASI:One, vote independently. Two of four to pass.
+The source hash, confidence score, and senate transcript are committed inside a RISC
+Zero ZK proof. Stored on 0G. Attested via EAS on Base Sepolia. ENS identity updated
+live. KeeperHub automates every step.
+(~60 wds — keep energetic, visionary pace; architecture diagram on screen carries the detail)
 ```
 
 ---
 
 ### SECTION 3 — LIVE DEMO `[01:18–02:27]`
+**Speaker: ROBIN**
 
 > **Robin drives the browser the entire demo. Move the cursor deliberately. Speak at 90% of your normal pace — let the UI breathe between sentences.**
 
 ```
 [01:18–01:26] ROBIN:
 This is simoproof.org. Live, on Cloudflare Pages. Ten verified discoveries already
-on-chain. Let's run one right now.
-(~18 wds)
+on-chain. Let's run one now.
+(~17 wds)
 
 [01:26–01:36] ROBIN:
 Arctic sea ice — September 2023, 4.23 million square kilometres, 97% confidence,
@@ -103,56 +102,59 @@ sourced from NSIDC. Clicking Run Pipeline.
 (~17 wds — pause 1 second before clicking)
 
 [01:36–01:46] ROBIN:
-Step one: Gensyn AXL ingestion — three P2P nodes pre-validating the claim. Step two:
-our Simocracy senate deliberating.
-(~17 wds)
+Step one: Gensyn AXL ingestion — three P2P nodes pre-validating. Step two: Simocracy
+senate deliberating — four agents, independent votes.
+(~18 wds)
 
-[01:46–02:02] SHAKA:
-This is the key step. RISC Zero zkVM is generating the ZK proof right now — checking
-the SHA-256 source hash, gating on 97% confidence, confirming the senate consensus.
-The full deliberation transcript is sealed inside the proof. Cryptographically anchored.
-(~38 wds — speak slowly here, this is the headline technical moment)
+[01:46–02:02] ROBIN:
+Step three — RISC Zero zkVM generating the proof right now. It's verifying the SHA-256
+source hash against the raw API data, gating on 97% confidence, checking the senate vote
+count. The full deliberation transcript is sealed inside the proof journal.
+Cryptographically anchored.
+(~40 wds — slow down here, this is the headline technical moment)
 
 [02:02–02:12] ROBIN:
-0G storage, EAS attestation, ENS update, KeeperHub — all firing. Watch the terminal.
-There — DiscoveryVerifier.sol submitting to EAS on Base Sepolia. Non-revocable.
-(~24 wds)
+Steps four through seven: 0G storage, EAS attestation on Base Sepolia, ENS update,
+KeeperHub. Watch the terminal — DiscoveryVerifier.sol just submitted. Non-revocable.
+(~25 wds)
 
 [02:12–02:20] ROBIN:
-Live attestation feed — that row links directly to EAS Scan on Base Sepolia. Judges can
+Live attestation feed — that row links directly to EAS Scan on Base Sepolia. You can
 verify this independently right now.
 (~20 wds)
 
 [02:20–02:27] ROBIN:
-Here's node-1.simoproof.eth — discoveries_count now at ten, latest EAS UID pointing
-to this attestation. ENS as a live on-chain audit log.
-(~22 wds)
+node-1.simoproof.eth — discoveries_count at ten, latest EAS UID live in the ENS text
+records. On-chain audit log.
+(~18 wds)
 ```
 
 ---
 
 ### SECTION 4 — PRIZE INTEGRATIONS `[02:27–02:49]`
+**Speaker: ROBIN**
 
 ```
-[02:27–02:35] SHAKA:
-For ENS: every verifier node is a full ENSIP-25 agent. Live text records — agent type,
-capabilities, protocol version, running discovery count.
-(~22 wds)
+[02:27–02:36] ROBIN:
+For ENS: every verifier node is a full ENSIP-25 agent — agent type, capabilities,
+protocol version, AXL pubkey, all in live text records. Permissionless peer discovery.
+(~27 wds)
 
-[02:35–02:43] ROBIN:
-For Gensyn: AXL is the P2P pre-validation backbone. The AXL pubkey lives directly in the
-ENS text records for permissionless peer discovery.
-(~22 wds)
+[02:36–02:44] ROBIN:
+Gensyn AXL is the P2P pre-validation backbone. Three nodes, encrypted peer-to-peer,
+broadcasting the claim before it ever hits the senate.
+(~23 wds)
 
-[02:43–02:49] SHAKA:
-KeeperHub: five automated workflows, every pipeline stage, full audit trail. Zero manual
+[02:44–02:49] ROBIN:
+KeeperHub: five automated workflows, every pipeline stage, guaranteed retry, zero manual
 intervention.
-(~13 wds)
+(~14 wds)
 ```
 
 ---
 
 ### SECTION 5 — CLOSE `[02:49–02:57]`
+**Speaker: SHAKA**
 
 ```
 [02:49–02:57] SHAKA:
@@ -162,7 +164,7 @@ SimoProof. Every claim proven. Every vote on-chain. Live demo at simoproof.org �
 
 ---
 
-**TOTAL WORD COUNT: ~346 words | ESTIMATED SPEAKING TIME: ~2:41–2:53**
+**TOTAL WORD COUNT: ~364 words | ESTIMATED SPEAKING TIME: ~2:42–2:54**
 *(Accounts for natural pauses, demo click timing, and deliberate pacing on technical sections.)*
 
 ---
